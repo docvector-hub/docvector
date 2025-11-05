@@ -93,8 +93,8 @@ backups/
 *.sql
 *.dump
 
-# Models (large files)
-models/
+# ML Models (large files) - exclude from root only
+/models/
 *.bin
 *.pt
 *.pth

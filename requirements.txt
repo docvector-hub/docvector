@@ -1,0 +1,52 @@
+# Core dependencies for DocVector
+
+# Web framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+
+# Database
+sqlalchemy[asyncio]==2.0.25
+asyncpg==0.29.0
+alembic==1.13.0
+
+# Vector database
+qdrant-client==1.7.0
+
+# Redis
+redis==5.0.1
+hiredis==2.3.2
+
+# Task queue
+celery==5.3.4
+
+# ML/Embeddings
+sentence-transformers==2.2.2
+torch==2.1.2
+transformers==4.36.0
+
+# Web scraping
+aiohttp==3.9.1
+httpx==0.26.0
+beautifulsoup4==4.12.2
+lxml==5.1.0
+
+# Document parsing
+pypdf==3.17.4
+python-docx==1.1.0
+markdown-it-py==3.0.0
+
+# Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Utilities
+pyyaml==6.0.1
+python-dotenv==1.0.0
+structlog==24.1.0
+click==8.1.7
+
+# Monitoring
+prometheus-client==0.19.0
