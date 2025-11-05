@@ -1,0 +1,120 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: docvector
+          POSTGRES_PASSWORD: docvector
+          POSTGRES_DB: docvector_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      qdrant:
+        image: qdrant/qdrant:latest
+        ports:
+          - 6333:6333
+        options: >-
+          --health-cmd "curl -f http://localhost:6333/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'requirements-test.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-test.txt
+
+    - name: Lint with ruff
+      run: |
+        ruff check src/ tests/
+
+    - name: Check formatting with black
+      run: |
+        black --check src/ tests/
+
+    - name: Type check with mypy
+      run: |
+        mypy src/
+      continue-on-error: true  # Don't fail build on type errors yet
+
+    - name: Run unit tests
+      env:
+        DATABASE_URL: postgresql+asyncpg://docvector:docvector@localhost:5432/docvector_test
+        REDIS_URL: redis://localhost:6379/0
+        QDRANT_HOST: localhost
+        QDRANT_PORT: 6333
+      run: |
+        pytest tests/unit/ -v --cov=src/docvector --cov-report=xml
+
+    - name: Run integration tests
+      env:
+        DATABASE_URL: postgresql+asyncpg://docvector:docvector@localhost:5432/docvector_test
+        REDIS_URL: redis://localhost:6379/0
+        QDRANT_HOST: localhost
+        QDRANT_PORT: 6333
+      run: |
+        pytest tests/integration/ -v
+
+    - name: Run API tests
+      env:
+        DATABASE_URL: postgresql+asyncpg://docvector:docvector@localhost:5432/docvector_test
+        REDIS_URL: redis://localhost:6379/0
+        QDRANT_HOST: localhost
+        QDRANT_PORT: 6333
+      run: |
+        pytest tests/api/ -v
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
