@@ -3,6 +3,7 @@
 from .search import SearchRequest, SearchResponse, SearchResultSchema
 from .source import SourceCreate, SourceResponse, SourceUpdate
 from .common import HealthResponse
+from .ingestion import IngestSourceRequest, IngestUrlRequest, IngestionResponse
 
 __all__ = [
     "SearchRequest",
@@ -12,4 +13,7 @@ __all__ = [
     "SourceResponse",
     "SourceUpdate",
     "HealthResponse",
+    "IngestSourceRequest",
+    "IngestUrlRequest",
+    "IngestionResponse",
 ]

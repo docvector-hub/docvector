@@ -16,6 +16,11 @@ class SearchRequest(BaseModel):
         description="Search type: 'vector', 'hybrid'",
         pattern="^(vector|hybrid)$",
     )
+    access_level: Optional[str] = Field(
+        None,
+        description="Filter by access level: 'public', 'private', or None for all",
+        pattern="^(public|private)$",
+    )
     filters: Optional[Dict] = Field(None, description="Optional filters")
     score_threshold: Optional[float] = Field(
         None, description="Minimum similarity score", ge=0, le=1

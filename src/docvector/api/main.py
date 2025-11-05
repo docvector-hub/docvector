@@ -139,10 +139,11 @@ async def health_check():
 
 
 # Include routers
-from .routes import search, sources
+from .routes import search, sources, ingestion
 
 app.include_router(search.router, prefix="/api/v1", tags=["search"])
 app.include_router(sources.router, prefix="/api/v1/sources", tags=["sources"])
+app.include_router(ingestion.router, prefix="/api/v1", tags=["ingestion"])
 
 
 if __name__ == "__main__":

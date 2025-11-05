@@ -1,5 +1,5 @@
 """API routes."""
 
-from . import search, sources, health
+from . import search, sources, health, ingestion
 
-__all__ = ["search", "sources", "health"]
+__all__ = ["search", "sources", "health", "ingestion"]

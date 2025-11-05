@@ -23,11 +23,16 @@ async def search(
     Performs vector similarity search or hybrid search across indexed documents.
     """
     try:
+        # Add access_level to filters if specified
+        filters = request.filters or {}
+        if request.access_level:
+            filters["access_level"] = request.access_level
+
         results = await search_service.search(
             query=request.query,
             limit=request.limit,
             search_type=request.search_type,
-            filters=request.filters,
+            filters=filters if filters else None,
             score_threshold=request.score_threshold,
         )
 
