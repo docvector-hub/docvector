@@ -14,12 +14,9 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy.orm import relationship
 
-
-class Base(DeclarativeBase):
-    """Base class for all database models."""
-    pass
+from .base import Base
 
 
 class Source(Base):
@@ -148,3 +145,6 @@ class Job(Base):
 
     def __repr__(self) -> str:
         return f"<Job(id={self.id}, type={self.type}, status={self.status})>"
+
+
+__all__ = ["Base", "Source", "Document", "Chunk", "Job"]
