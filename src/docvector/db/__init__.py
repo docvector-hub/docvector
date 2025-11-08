@@ -68,3 +68,7 @@ async def close_db() -> None:
         await _engine.dispose()
         _engine = None
         logger.info("Database connection closed")
+
+
+# Alias for backwards compatibility
+get_db_session = get_session

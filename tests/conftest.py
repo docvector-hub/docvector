@@ -8,7 +8,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from docvector.models.base import Base
+from docvector.models import Base
 
 
 # Event loop fixture for async tests

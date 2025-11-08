@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     app_version: str = Field(default="0.1.0")
     environment: str = Field(default="development")
     log_level: str = Field(default="INFO")
+    cors_origins: list[str] = Field(default=["*"])
 
     # Database
     database_url: str = Field(default="postgresql+asyncpg://localhost/docvector")
