@@ -50,6 +50,7 @@ dependencies = [
 
     # Text processing
     "markdown>=3.5.0",
+    "markdown-it-py>=3.0.0",
 
     # Configuration
     "pydantic>=2.5.0",
