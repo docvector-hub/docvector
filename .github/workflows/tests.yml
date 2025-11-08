@@ -7,12 +7,89 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
 
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install -r requirements-test.txt
+
+    - name: Lint with ruff
+      run: |
+        ruff check src/ tests/
+
+    - name: Check formatting with black
+      run: |
+        black --check src/ tests/
+
+    - name: Type check with mypy
+      run: |
+        mypy src/
+      continue-on-error: true
+
+  unit-tests:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ${{ github.ref == 'refs/heads/main' && fromJSON('["3.11", "3.12"]') || fromJSON('["3.12"]') }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-py${{ matrix.python-version }}-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install -r requirements-test.txt
+
+    - name: Run unit tests
+      run: |
+        pytest tests/unit/ -v -n auto --cov=src/docvector --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.12'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ${{ github.ref == 'refs/heads/main' && fromJSON('["3.11", "3.12"]') || fromJSON('["3.12"]') }}
 
     services:
       postgres:
@@ -57,9 +134,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements-test.txt') }}
+        key: ${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
         restore-keys: |
-          ${{ runner.os }}-pip-
+          ${{ runner.os }}-py${{ matrix.python-version }}-
 
     - name: Install dependencies
       run: |
@@ -91,50 +168,11 @@ jobs:
 
         echo "All services are ready!"
 
-    - name: Lint with ruff
-      run: |
-        ruff check src/ tests/
-
-    - name: Check formatting with black
-      run: |
-        black --check src/ tests/
-
-    - name: Type check with mypy
-      run: |
-        mypy src/
-      continue-on-error: true  # Don't fail build on type errors yet
-
-    - name: Run unit tests
+    - name: Run integration and API tests
       env:
         DATABASE_URL: postgresql+asyncpg://docvector:docvector@localhost:5432/docvector_test
         REDIS_URL: redis://localhost:6379/0
         QDRANT_HOST: localhost
         QDRANT_PORT: 6333
       run: |
-        pytest tests/unit/ -v --cov=src/docvector --cov-report=xml
-
-    - name: Run integration tests
-      env:
-        DATABASE_URL: postgresql+asyncpg://docvector:docvector@localhost:5432/docvector_test
-        REDIS_URL: redis://localhost:6379/0
-        QDRANT_HOST: localhost
-        QDRANT_PORT: 6333
-      run: |
-        pytest tests/integration/ -v
-
-    - name: Run API tests
-      env:
-        DATABASE_URL: postgresql+asyncpg://docvector:docvector@localhost:5432/docvector_test
-        REDIS_URL: redis://localhost:6379/0
-        QDRANT_HOST: localhost
-        QDRANT_PORT: 6333
-      run: |
-        pytest tests/api/ -v
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+        pytest tests/integration/ tests/api/ -v -n auto
