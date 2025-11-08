@@ -39,6 +39,9 @@ class HTMLParser(BaseParser):
                     include_images=False,
                     include_tables=True,
                     include_comments=False,
+                    no_fallback=False,
+                    favor_precision=False,
+                    favor_recall=True,
                     output_format="txt",
                 )
 
@@ -48,6 +51,18 @@ class HTMLParser(BaseParser):
                     title = self._extract_title(soup)
                     language = self._extract_language(soup)
                     metadata = self._extract_metadata(soup, url)
+
+                    # Extract headings to ensure they're in the content
+                    # (trafilatura sometimes excludes them)
+                    headings = []
+                    for tag in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
+                        heading_text = tag.get_text(strip=True)
+                        if heading_text and heading_text not in text:
+                            headings.append(heading_text)
+
+                    # Prepend headings that aren't already in the text
+                    if headings:
+                        text = "\n".join(headings) + "\n\n" + text
 
                     return ParsedDocument(
                         content=clean_text(text),

@@ -138,6 +138,8 @@ class WebCrawler(BaseFetcher):
 
     async def _fetch_sitemap(self, base_url: str) -> Set[str]:
         """Try to fetch and parse sitemap.xml."""
+        await self._init_session()
+
         parsed = urlparse(base_url)
         sitemap_url = f"{parsed.scheme}://{parsed.netloc}/sitemap.xml"
 

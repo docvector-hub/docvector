@@ -62,10 +62,19 @@ class TestQdrantVectorDB:
     @pytest.mark.asyncio
     async def test_create_collection_already_exists(self, vectordb, mock_qdrant_client):
         """Test creating collection that already exists."""
+        # Create a mock response object for UnexpectedResponse
+        from unittest.mock import Mock
+        mock_response = Mock()
+        mock_response.status_code = 409
+        mock_response.reason_phrase = "already exists"
+        mock_response.content = b"already exists"
+        mock_response.text = "already exists"
+
         mock_qdrant_client.create_collection.side_effect = UnexpectedResponse(
             status_code=409,
             reason_phrase="already exists",
             content=b"already exists",
+            response=mock_response,
         )
 
         await vectordb.initialize()

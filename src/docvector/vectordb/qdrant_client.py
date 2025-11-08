@@ -361,34 +361,36 @@ class QdrantVectorDB(BaseVectorDB):
                             match=models.MatchExcept(**{"except": [value["$ne"]]}),
                         )
                     )
-                elif "$gt" in value:
-                    conditions.append(
-                        models.FieldCondition(
-                            key=key,
-                            range=models.Range(gt=value["$gt"]),
+                else:
+                    # Range operators - use if instead of elif to support multiple ranges
+                    if "$gt" in value:
+                        conditions.append(
+                            models.FieldCondition(
+                                key=key,
+                                range=models.Range(gt=value["$gt"]),
+                            )
                         )
-                    )
-                elif "$gte" in value:
-                    conditions.append(
-                        models.FieldCondition(
-                            key=key,
-                            range=models.Range(gte=value["$gte"]),
+                    if "$gte" in value:
+                        conditions.append(
+                            models.FieldCondition(
+                                key=key,
+                                range=models.Range(gte=value["$gte"]),
+                            )
                         )
-                    )
-                elif "$lt" in value:
-                    conditions.append(
-                        models.FieldCondition(
-                            key=key,
-                            range=models.Range(lt=value["$lt"]),
+                    if "$lt" in value:
+                        conditions.append(
+                            models.FieldCondition(
+                                key=key,
+                                range=models.Range(lt=value["$lt"]),
+                            )
                         )
-                    )
-                elif "$lte" in value:
-                    conditions.append(
-                        models.FieldCondition(
-                            key=key,
-                            range=models.Range(lte=value["$lte"]),
+                    if "$lte" in value:
+                        conditions.append(
+                            models.FieldCondition(
+                                key=key,
+                                range=models.Range(lte=value["$lte"]),
+                            )
                         )
-                    )
             else:
                 # Exact match
                 conditions.append(
