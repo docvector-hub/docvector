@@ -117,17 +117,18 @@ class HTMLParser(BaseParser):
         """Extract title from HTML."""
         # Try <title> tag
         if soup.title and soup.title.string:
-            return soup.title.string.strip()
+            return str(soup.title.string).strip()
 
         # Try <h1> tag
         h1 = soup.find("h1")
         if h1:
-            return h1.get_text(strip=True)
+            return str(h1.get_text(strip=True))
 
         # Try og:title meta tag
         og_title = soup.find("meta", property="og:title")
         if og_title and og_title.get("content"):
-            return og_title["content"].strip()
+            content = og_title["content"]
+            return str(content).strip() if content else None
 
         return None
 
@@ -136,15 +137,19 @@ class HTMLParser(BaseParser):
         # Try <html lang="...">
         html_tag = soup.find("html")
         if html_tag and html_tag.get("lang"):
-            lang = html_tag["lang"].strip().lower()
-            # Take first part (e.g., "en-US" -> "en")
-            return lang.split("-")[0]
+            lang_attr = html_tag["lang"]
+            if lang_attr:
+                lang = str(lang_attr).strip().lower()
+                # Take first part (e.g., "en-US" -> "en")
+                return lang.split("-")[0]
 
         # Try meta tag
         lang_meta = soup.find("meta", attrs={"http-equiv": "Content-Language"})
         if lang_meta and lang_meta.get("content"):
-            lang = lang_meta["content"].strip().lower()
-            return lang.split("-")[0]
+            content = lang_meta["content"]
+            if content:
+                lang = str(content).strip().lower()
+                return lang.split("-")[0]
 
         return "en"
 

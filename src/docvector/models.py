@@ -29,18 +29,18 @@ class Source(Base):
 
     __tablename__ = "sources"
 
-    id: UUID = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
-    name: str = Column(String(255), nullable=False, unique=True)
-    type: str = Column(String(50), nullable=False)
-    config: dict = Column(JSONB, nullable=False, server_default="{}")
-    status: str = Column(String(50), nullable=False, server_default="active")
-    sync_frequency: Optional[str] = Column(String(50), nullable=True)
-    last_synced_at: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
-    error_message: Optional[str] = Column(Text, nullable=True)
-    created_at: datetime = Column(
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    name = Column(String(255), nullable=False, unique=True)
+    type = Column(String(50), nullable=False)
+    config = Column(JSONB, nullable=False, server_default="{}")
+    status = Column(String(50), nullable=False, server_default="active")
+    sync_frequency = Column(String(50), nullable=True)
+    last_synced_at = Column(DateTime(timezone=True), nullable=True)
+    error_message = Column(Text, nullable=True)
+    created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    updated_at: datetime = Column(
+    updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
@@ -56,32 +56,32 @@ class Document(Base):
 
     __tablename__ = "documents"
 
-    id: UUID = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
-    source_id: UUID = Column(
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    source_id = Column(
         PG_UUID(as_uuid=True), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False
     )
-    url: Optional[str] = Column(String(2048), nullable=True)
-    path: Optional[str] = Column(String(1024), nullable=True)
-    content_hash: str = Column(String(64), nullable=False)
-    title: Optional[str] = Column(String(512), nullable=True)
-    content: Optional[str] = Column(Text, nullable=True)
-    content_length: Optional[int] = Column(Integer, nullable=True)
-    metadata_: dict = Column("metadata", JSONB, nullable=False, server_default="{}")
-    language: str = Column(String(10), nullable=False, server_default="en")
-    format: Optional[str] = Column(String(50), nullable=True)
-    status: str = Column(String(50), nullable=False, server_default="pending")
-    error_message: Optional[str] = Column(Text, nullable=True)
-    chunk_count: int = Column(Integer, server_default="0")
-    chunking_strategy: str = Column(String(50), server_default="semantic")
-    fetched_at: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
-    processed_at: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
-    author: Optional[str] = Column(String(255), nullable=True)
-    published_at: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
-    modified_at: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
-    created_at: datetime = Column(
+    url = Column(String(2048), nullable=True)
+    path = Column(String(1024), nullable=True)
+    content_hash = Column(String(64), nullable=False)
+    title = Column(String(512), nullable=True)
+    content = Column(Text, nullable=True)
+    content_length = Column(Integer, nullable=True)
+    metadata_ = Column("metadata", JSONB, nullable=False, server_default="{}")
+    language = Column(String(10), nullable=False, server_default="en")
+    format = Column(String(50), nullable=True)
+    status = Column(String(50), nullable=False, server_default="pending")
+    error_message = Column(Text, nullable=True)
+    chunk_count = Column(Integer, server_default="0")
+    chunking_strategy = Column(String(50), server_default="semantic")
+    fetched_at = Column(DateTime(timezone=True), nullable=True)
+    processed_at = Column(DateTime(timezone=True), nullable=True)
+    author = Column(String(255), nullable=True)
+    published_at = Column(DateTime(timezone=True), nullable=True)
+    modified_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    updated_at: datetime = Column(
+    updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
@@ -98,23 +98,23 @@ class Chunk(Base):
 
     __tablename__ = "chunks"
 
-    id: UUID = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
-    document_id: UUID = Column(
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    document_id = Column(
         PG_UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False
     )
-    index: int = Column(Integer, nullable=False)
-    content: str = Column(Text, nullable=False)
-    content_length: int = Column(Integer, nullable=False)
-    start_char: Optional[int] = Column(Integer, nullable=True)
-    end_char: Optional[int] = Column(Integer, nullable=True)
-    metadata_: dict = Column("metadata", JSONB, nullable=False, server_default="{}")
-    embedding_id: Optional[str] = Column(String(255), nullable=True)
-    embedding_model: Optional[str] = Column(String(255), nullable=True)
-    embedded_at: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
-    created_at: datetime = Column(
+    index = Column(Integer, nullable=False)
+    content = Column(Text, nullable=False)
+    content_length = Column(Integer, nullable=False)
+    start_char = Column(Integer, nullable=True)
+    end_char = Column(Integer, nullable=True)
+    metadata_ = Column("metadata", JSONB, nullable=False, server_default="{}")
+    embedding_id = Column(String(255), nullable=True)
+    embedding_model = Column(String(255), nullable=True)
+    embedded_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    updated_at: datetime = Column(
+    updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
@@ -130,21 +130,21 @@ class Job(Base):
 
     __tablename__ = "jobs"
 
-    id: UUID = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
-    source_id: Optional[UUID] = Column(
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    source_id = Column(
         PG_UUID(as_uuid=True), ForeignKey("sources.id", ondelete="SET NULL"), nullable=True
     )
-    type: str = Column(String(50), nullable=False)
-    status: str = Column(String(50), nullable=False, server_default="pending")
-    progress: dict = Column(JSONB, nullable=False, server_default="{}")
-    result: Optional[dict] = Column(JSONB, nullable=True)
-    error_message: Optional[str] = Column(Text, nullable=True)
-    started_at: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
-    completed_at: Optional[datetime] = Column(DateTime(timezone=True), nullable=True)
-    created_at: datetime = Column(
+    type = Column(String(50), nullable=False)
+    status = Column(String(50), nullable=False, server_default="pending")
+    progress = Column(JSONB, nullable=False, server_default="{}")
+    result = Column(JSONB, nullable=True)
+    error_message = Column(Text, nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    updated_at: datetime = Column(
+    updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 

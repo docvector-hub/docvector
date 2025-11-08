@@ -117,6 +117,11 @@ class IngestionService:
         try:
             # Fetch documents based on source type
             if source.type == "web":
+                if self.crawler is None:
+                    raise DocVectorException(
+                        code="SERVICE_NOT_INITIALIZED",
+                        message="Crawler not initialized",
+                    )
                 fetched_docs = await self.crawler.fetch(source.config)
             else:
                 raise DocVectorException(
@@ -182,6 +187,11 @@ class IngestionService:
         )
 
         # Fetch document
+        if self.crawler is None:
+            raise DocVectorException(
+                code="SERVICE_NOT_INITIALIZED",
+                message="Crawler not initialized",
+            )
         fetched_doc = await self.crawler.fetch_single(url)
 
         # Process document
@@ -230,6 +240,11 @@ class IngestionService:
 
         try:
             # Process document (parse and chunk)
+            if self.pipeline is None:
+                raise DocVectorException(
+                    code="SERVICE_NOT_INITIALIZED",
+                    message="Pipeline not initialized",
+                )
             parsed, chunks = await self.pipeline.process(
                 content=fetched_doc.content,
                 mime_type=fetched_doc.mime_type,
@@ -299,6 +314,11 @@ class IngestionService:
 
         if texts_to_embed:
             logger.debug("Generating embeddings", count=len(texts_to_embed))
+            if self.embedder is None:
+                raise DocVectorException(
+                    code="SERVICE_NOT_INITIALIZED",
+                    message="Embedder not initialized",
+                )
             new_embeddings_list = await self.embedder.embed(texts_to_embed)
 
             # Create embedding map
@@ -369,6 +389,11 @@ class IngestionService:
 
         # Store in vector database
         if vector_ids:
+            if self.vectordb is None:
+                raise DocVectorException(
+                    code="SERVICE_NOT_INITIALIZED",
+                    message="Vector DB not initialized",
+                )
             await self.vectordb.upsert(
                 collection_name=settings.qdrant_collection,
                 ids=vector_ids,
