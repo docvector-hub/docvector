@@ -39,8 +39,11 @@ class HTMLParser(BaseParser):
                     include_images=False,
                     include_tables=True,
                     include_comments=False,
+                    # no_fallback=False: Allow fallback to ensure we get content even if main extraction fails
                     no_fallback=False,
+                    # favor_precision=False: Prioritize getting more content over strict precision
                     favor_precision=False,
+                    # favor_recall=True: Maximize content extraction, important for documentation
                     favor_recall=True,
                     output_format="txt",
                 )
@@ -54,10 +57,13 @@ class HTMLParser(BaseParser):
 
                     # Extract headings to ensure they're in the content
                     # (trafilatura sometimes excludes them)
+                    # Convert text to set of lines for accurate membership checking
+                    text_lines = set(line.strip() for line in text.split('\n') if line.strip())
                     headings = []
                     for tag in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
                         heading_text = tag.get_text(strip=True)
-                        if heading_text and heading_text not in text:
+                        # Check if heading exists as a complete line to avoid false positives
+                        if heading_text and heading_text not in text_lines:
                             headings.append(heading_text)
 
                     # Prepend headings that aren't already in the text

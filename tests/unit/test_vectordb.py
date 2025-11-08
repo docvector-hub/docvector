@@ -1,6 +1,7 @@
 """Tests for vector database."""
 
 import pytest
+from unittest.mock import Mock
 from qdrant_client.http.exceptions import UnexpectedResponse
 
 from docvector.vectordb import QdrantVectorDB, SearchResult
@@ -63,7 +64,6 @@ class TestQdrantVectorDB:
     async def test_create_collection_already_exists(self, vectordb, mock_qdrant_client):
         """Test creating collection that already exists."""
         # Create a mock response object for UnexpectedResponse
-        from unittest.mock import Mock
         mock_response = Mock()
         mock_response.status_code = 409
         mock_response.reason_phrase = "already exists"

@@ -133,7 +133,10 @@ class SemanticChunker(BaseChunker):
                     )
                     chunks.append(chunk)
 
-                chunk_start = para_start + len(para)
+                # Update position including newline separator
+                chunk_start = para_start + len(para) + 1
+                # Skip subsequent elif/else since we've fully processed this paragraph
+                continue
 
             # If adding this paragraph exceeds max size
             elif current_size + para_size > self.max_chunk_size and current_chunk:
