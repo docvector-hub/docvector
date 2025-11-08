@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import httpx
 
-from docvector.core import get_logger, settings, DocVectorException
+from docvector.core import DocVectorException, get_logger, settings
 
 from .base import BaseEmbedder
 

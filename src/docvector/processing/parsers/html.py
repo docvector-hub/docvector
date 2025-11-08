@@ -58,9 +58,9 @@ class HTMLParser(BaseParser):
                     # Extract headings to ensure they're in the content
                     # (trafilatura sometimes excludes them)
                     # Convert text to set of lines for accurate membership checking
-                    text_lines = set(line.strip() for line in text.split('\n') if line.strip())
+                    text_lines = set(line.strip() for line in text.split("\n") if line.strip())
                     headings = []
-                    for tag in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
+                    for tag in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
                         heading_text = tag.get_text(strip=True)
                         # Check if heading exists as a complete line to avoid false positives
                         if heading_text and heading_text not in text_lines:
@@ -148,9 +148,7 @@ class HTMLParser(BaseParser):
 
         return "en"
 
-    def _extract_metadata(
-        self, soup: BeautifulSoup, url: Optional[str]
-    ) -> dict:
+    def _extract_metadata(self, soup: BeautifulSoup, url: Optional[str]) -> dict:
         """Extract metadata from HTML."""
         metadata = {}
 

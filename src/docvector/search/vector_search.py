@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 from docvector.core import get_logger, settings
 from docvector.embeddings import BaseEmbedder
-from docvector.vectordb import BaseVectorDB, SearchResult
+from docvector.vectordb import BaseVectorDB
 
 logger = get_logger(__name__)
 

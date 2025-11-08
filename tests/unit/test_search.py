@@ -171,8 +171,7 @@ class TestHybridSearch:
         """Test that hybrid search respects result limit."""
         # Create many results
         results = [
-            SearchResultItem(f"c{i}", f"d{i}", 0.9 - i * 0.1, f"content{i}")
-            for i in range(20)
+            SearchResultItem(f"c{i}", f"d{i}", 0.9 - i * 0.1, f"content{i}") for i in range(20)
         ]
 
         hybrid_search.vector_search.search.return_value = results

@@ -4,8 +4,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from docvector.api.dependencies import get_session
-from docvector.api.schemas import IngestSourceRequest, IngestUrlRequest, IngestionResponse
-from docvector.core import get_logger, DocVectorException
+from docvector.api.schemas import IngestionResponse, IngestSourceRequest, IngestUrlRequest
+from docvector.core import DocVectorException, get_logger
 from docvector.db.repositories import SourceRepository
 from docvector.services import IngestionService
 

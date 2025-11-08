@@ -2,7 +2,6 @@
 
 import asyncio
 from typing import AsyncGenerator, Generator
-from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine

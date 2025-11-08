@@ -1,14 +1,13 @@
 """Ingestion service - orchestrates document ingestion."""
 
 from datetime import datetime
-from typing import Dict, List, Optional
-from uuid import UUID
+from typing import Dict, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from docvector.core import get_logger, settings, DocVectorException
+from docvector.core import DocVectorException, get_logger, settings
 from docvector.db.repositories import ChunkRepository, DocumentRepository
-from docvector.embeddings import BaseEmbedder, LocalEmbedder, OpenAIEmbedder, EmbeddingCache
+from docvector.embeddings import BaseEmbedder, EmbeddingCache, LocalEmbedder, OpenAIEmbedder
 from docvector.ingestion import WebCrawler
 from docvector.models import Chunk, Document, Source
 from docvector.processing import ProcessingPipeline
@@ -296,9 +295,7 @@ class IngestionService:
             )
 
         # Generate embeddings for uncached chunks
-        texts_to_embed = [
-            text for text in chunk_texts if text not in cached_embeddings
-        ]
+        texts_to_embed = [text for text in chunk_texts if text not in cached_embeddings]
 
         if texts_to_embed:
             logger.debug("Generating embeddings", count=len(texts_to_embed))
@@ -357,16 +354,18 @@ class IngestionService:
 
             vector_ids.append(str(chunk.id))
             vectors.append(embedding)
-            payloads.append({
-                "chunk_id": str(chunk.id),
-                "document_id": str(document.id),
-                "source_id": str(document.source_id),
-                "content": chunk.content,
-                "title": document.title,
-                "url": document.url,
-                "access_level": access_level,  # Store access level for filtering
-                "metadata": chunk.metadata,
-            })
+            payloads.append(
+                {
+                    "chunk_id": str(chunk.id),
+                    "document_id": str(document.id),
+                    "source_id": str(document.source_id),
+                    "content": chunk.content,
+                    "title": document.title,
+                    "url": document.url,
+                    "access_level": access_level,  # Store access level for filtering
+                    "metadata": chunk.metadata,
+                }
+            )
 
         # Store in vector database
         if vector_ids:

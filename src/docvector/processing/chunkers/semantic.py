@@ -123,7 +123,7 @@ class SemanticChunker(BaseChunker):
                 # Split oversized paragraph into fixed-size chunks
                 para_start = chunk_start
                 for i in range(0, len(para), self.max_chunk_size):
-                    para_chunk = para[i:i + self.max_chunk_size]
+                    para_chunk = para[i : i + self.max_chunk_size]
                     chunk = TextChunk(
                         content=para_chunk,
                         index=start_index + len(chunks),

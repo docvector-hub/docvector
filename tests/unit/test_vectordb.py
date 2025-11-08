@@ -1,7 +1,8 @@
 """Tests for vector database."""
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
 from qdrant_client.http.exceptions import UnexpectedResponse
 
 from docvector.vectordb import QdrantVectorDB, SearchResult
@@ -39,7 +40,7 @@ class TestQdrantVectorDB:
         """Create vector DB with mocked client."""
         db = QdrantVectorDB()
         # Patch the client creation
-        mocker.patch.object(db, 'client', mock_qdrant_client)
+        mocker.patch.object(db, "client", mock_qdrant_client)
         return db
 
     @pytest.mark.asyncio

@@ -7,7 +7,7 @@ from urllib.parse import urljoin, urlparse
 import aiohttp
 from bs4 import BeautifulSoup
 
-from docvector.core import get_logger, settings, DocVectorException
+from docvector.core import DocVectorException, get_logger, settings
 
 from .base import BaseFetcher, FetchedDocument
 

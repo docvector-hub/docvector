@@ -35,9 +35,7 @@ class ChunkRepository:
 
     async def get_by_id(self, chunk_id: UUID) -> Optional[Chunk]:
         """Get chunk by ID."""
-        result = await self.session.execute(
-            select(Chunk).where(Chunk.id == chunk_id)
-        )
+        result = await self.session.execute(select(Chunk).where(Chunk.id == chunk_id))
         return result.scalar_one_or_none()
 
     async def list_by_document(
@@ -73,9 +71,7 @@ class ChunkRepository:
 
     async def delete_by_document(self, document_id: UUID) -> int:
         """Delete all chunks for a document."""
-        result = await self.session.execute(
-            select(Chunk).where(Chunk.document_id == document_id)
-        )
+        result = await self.session.execute(select(Chunk).where(Chunk.document_id == document_id))
         chunks = result.scalars().all()
 
         for chunk in chunks:

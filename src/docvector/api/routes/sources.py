@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from docvector.api.dependencies import get_session
 from docvector.api.schemas import SourceCreate, SourceResponse, SourceUpdate
-from docvector.core import get_logger, DocVectorException
+from docvector.core import DocVectorException, get_logger
 from docvector.services import SourceService
 
 logger = get_logger(__name__)
