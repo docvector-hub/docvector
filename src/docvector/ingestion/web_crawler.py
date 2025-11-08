@@ -136,6 +136,10 @@ class WebCrawler(BaseFetcher):
             await self.session.close()
             self.session = None
 
+    async def close(self) -> None:
+        """Close crawler and cleanup resources."""
+        await self._close_session()
+
     async def _fetch_sitemap(self, base_url: str) -> Set[str]:
         """Try to fetch and parse sitemap.xml."""
         await self._init_session()

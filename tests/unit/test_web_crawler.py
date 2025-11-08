@@ -10,13 +10,16 @@ class TestWebCrawler:
     """Test web crawler."""
 
     @pytest.fixture
-    def crawler(self):
+    async def crawler(self):
         """Create web crawler."""
-        return WebCrawler(
+        crawler_instance = WebCrawler(
             max_depth=2,
             max_pages=10,
             concurrent_requests=2,
         )
+        yield crawler_instance
+        # Cleanup: close the session if it was created
+        await crawler_instance.close()
 
     @pytest.mark.asyncio
     async def test_fetch_single_url(self, crawler):
