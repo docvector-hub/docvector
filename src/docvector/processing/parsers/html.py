@@ -58,7 +58,7 @@ class HTMLParser(BaseParser):
                     # Extract headings to ensure they're in the content
                     # (trafilatura sometimes excludes them)
                     # Convert text to set of lines for accurate membership checking
-                    text_lines = set(line.strip() for line in text.split("\n") if line.strip())
+                    text_lines = {line.strip() for line in text.split("\n") if line.strip()}
                     headings = []
                     for tag in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
                         heading_text = tag.get_text(strip=True)

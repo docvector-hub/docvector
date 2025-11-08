@@ -323,7 +323,7 @@ class IngestionService:
         vectors = []
         payloads = []
 
-        for i, text_chunk in enumerate(text_chunks):
+        for _i, text_chunk in enumerate(text_chunks):
             # Create chunk record
             chunk = Chunk(
                 document_id=document.id,

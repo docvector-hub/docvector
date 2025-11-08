@@ -49,4 +49,4 @@ async def search(
 
     except Exception as e:
         logger.error("Search failed", error=str(e), query=request.query)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

@@ -39,10 +39,12 @@ class TestWebCrawler:
     @pytest.mark.asyncio
     async def test_fetch_single_handles_error(self, crawler):
         """Test handling fetch errors."""
+        from aiohttp import ClientResponseError
+
         with aioresponses() as m:
             m.get("https://example.com/error", status=404)
 
-            with pytest.raises(Exception):
+            with pytest.raises(ClientResponseError):
                 await crawler.fetch_single("https://example.com/error")
 
     @pytest.mark.asyncio
