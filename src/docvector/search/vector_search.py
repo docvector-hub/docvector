@@ -20,7 +20,7 @@ class SearchResultItem:
     content: str
     title: Optional[str] = None
     url: Optional[str] = None
-    metadata: Dict = None
+    metadata: Optional[Dict] = None
 
     def __post_init__(self):
         if self.metadata is None:

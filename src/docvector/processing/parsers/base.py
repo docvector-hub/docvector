@@ -12,7 +12,7 @@ class ParsedDocument:
     content: str
     title: Optional[str] = None
     language: str = "en"
-    metadata: Dict = None
+    metadata: Optional[Dict] = None
 
     def __post_init__(self):
         if self.metadata is None:

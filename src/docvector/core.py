@@ -11,17 +11,32 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class DocVectorException(Exception):
     """Base exception for DocVector."""
 
-    def __init__(self, code: Optional[str] = None, message: Optional[str] = None):
+    def __init__(
+        self,
+        code: Optional[str] = None,
+        message: Optional[str] = None,
+        details: Optional[dict] = None,
+    ):
         """
         Initialize DocVectorException.
 
         Args:
             code: Error code
             message: Error message
+            details: Additional error details
         """
         self.code = code
         self.message = message or "An error occurred"
+        self.details = details or {}
         super().__init__(self.message)
+
+    def to_dict(self) -> dict:
+        """Convert exception to dictionary format."""
+        return {
+            "error": self.code or "UNKNOWN_ERROR",
+            "message": self.message,
+            "details": self.details,
+        }
 
 
 class Settings(BaseSettings):
@@ -147,6 +162,10 @@ class StructuredLogger:
     def critical(self, msg: str, **kwargs) -> None:
         """Log critical message with structured data."""
         self._logger.critical(self._format_message(msg, **kwargs))
+
+    def exception(self, msg: str, **kwargs) -> None:
+        """Log exception message with structured data."""
+        self._logger.exception(self._format_message(msg, **kwargs))
 
 
 def get_logger(name: str) -> StructuredLogger:

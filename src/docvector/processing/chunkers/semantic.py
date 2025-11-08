@@ -95,8 +95,8 @@ class SemanticChunker(BaseChunker):
         paragraphs = section.split("\n")
         paragraphs = [p.strip() for p in paragraphs if p.strip()]
 
-        chunks = []
-        current_chunk = []
+        chunks: List[TextChunk] = []
+        current_chunk: List[str] = []
         current_size = 0
         chunk_start = start_offset
 
