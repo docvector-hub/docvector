@@ -109,7 +109,8 @@ class QdrantVectorDB(BaseVectorDB):
             )
             logger.info("Collection created successfully", collection=collection_name)
         except UnexpectedResponse as e:
-            if "already exists" in str(e).lower():
+            # Handle collection already exists (409 Conflict)
+            if e.status_code == 409 or "already exists" in str(e).lower():
                 logger.warning("Collection already exists", collection=collection_name)
             else:
                 raise
