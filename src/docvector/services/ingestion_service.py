@@ -1,14 +1,13 @@
 """Ingestion service - orchestrates document ingestion."""
 
 from datetime import datetime
-from typing import Dict, List, Optional
-from uuid import UUID
+from typing import Dict, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from docvector.core import get_logger, settings, DocVectorException
+from docvector.core import DocVectorException, get_logger, settings
 from docvector.db.repositories import ChunkRepository, DocumentRepository
-from docvector.embeddings import BaseEmbedder, LocalEmbedder, OpenAIEmbedder, EmbeddingCache
+from docvector.embeddings import BaseEmbedder, EmbeddingCache, LocalEmbedder, OpenAIEmbedder
 from docvector.ingestion import WebCrawler
 from docvector.models import Chunk, Document, Source
 from docvector.processing import ProcessingPipeline
@@ -118,6 +117,11 @@ class IngestionService:
         try:
             # Fetch documents based on source type
             if source.type == "web":
+                if self.crawler is None:
+                    raise DocVectorException(
+                        code="SERVICE_NOT_INITIALIZED",
+                        message="Crawler not initialized",
+                    )
                 fetched_docs = await self.crawler.fetch(source.config)
             else:
                 raise DocVectorException(
@@ -183,6 +187,11 @@ class IngestionService:
         )
 
         # Fetch document
+        if self.crawler is None:
+            raise DocVectorException(
+                code="SERVICE_NOT_INITIALIZED",
+                message="Crawler not initialized",
+            )
         fetched_doc = await self.crawler.fetch_single(url)
 
         # Process document
@@ -231,6 +240,11 @@ class IngestionService:
 
         try:
             # Process document (parse and chunk)
+            if self.pipeline is None:
+                raise DocVectorException(
+                    code="SERVICE_NOT_INITIALIZED",
+                    message="Pipeline not initialized",
+                )
             parsed, chunks = await self.pipeline.process(
                 content=fetched_doc.content,
                 mime_type=fetched_doc.mime_type,
@@ -296,12 +310,15 @@ class IngestionService:
             )
 
         # Generate embeddings for uncached chunks
-        texts_to_embed = [
-            text for text in chunk_texts if text not in cached_embeddings
-        ]
+        texts_to_embed = [text for text in chunk_texts if text not in cached_embeddings]
 
         if texts_to_embed:
             logger.debug("Generating embeddings", count=len(texts_to_embed))
+            if self.embedder is None:
+                raise DocVectorException(
+                    code="SERVICE_NOT_INITIALIZED",
+                    message="Embedder not initialized",
+                )
             new_embeddings_list = await self.embedder.embed(texts_to_embed)
 
             # Create embedding map
@@ -326,7 +343,7 @@ class IngestionService:
         vectors = []
         payloads = []
 
-        for i, text_chunk in enumerate(text_chunks):
+        for _i, text_chunk in enumerate(text_chunks):
             # Create chunk record
             chunk = Chunk(
                 document_id=document.id,
@@ -357,19 +374,26 @@ class IngestionService:
 
             vector_ids.append(str(chunk.id))
             vectors.append(embedding)
-            payloads.append({
-                "chunk_id": str(chunk.id),
-                "document_id": str(document.id),
-                "source_id": str(document.source_id),
-                "content": chunk.content,
-                "title": document.title,
-                "url": document.url,
-                "access_level": access_level,  # Store access level for filtering
-                "metadata": chunk.metadata,
-            })
+            payloads.append(
+                {
+                    "chunk_id": str(chunk.id),
+                    "document_id": str(document.id),
+                    "source_id": str(document.source_id),
+                    "content": chunk.content,
+                    "title": document.title,
+                    "url": document.url,
+                    "access_level": access_level,  # Store access level for filtering
+                    "metadata": chunk.metadata,
+                }
+            )
 
         # Store in vector database
         if vector_ids:
+            if self.vectordb is None:
+                raise DocVectorException(
+                    code="SERVICE_NOT_INITIALIZED",
+                    message="Vector DB not initialized",
+                )
             await self.vectordb.upsert(
                 collection_name=settings.qdrant_collection,
                 ids=vector_ids,

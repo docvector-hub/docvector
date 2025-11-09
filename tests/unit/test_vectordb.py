@@ -1,5 +1,7 @@
 """Tests for vector database."""
 
+from unittest.mock import Mock
+
 import pytest
 from qdrant_client.http.exceptions import UnexpectedResponse
 
@@ -38,7 +40,7 @@ class TestQdrantVectorDB:
         """Create vector DB with mocked client."""
         db = QdrantVectorDB()
         # Patch the client creation
-        mocker.patch.object(db, 'client', mock_qdrant_client)
+        mocker.patch.object(db, "client", mock_qdrant_client)
         return db
 
     @pytest.mark.asyncio
@@ -62,10 +64,19 @@ class TestQdrantVectorDB:
     @pytest.mark.asyncio
     async def test_create_collection_already_exists(self, vectordb, mock_qdrant_client):
         """Test creating collection that already exists."""
+        # Create a mock response object for UnexpectedResponse
+        mock_response = Mock()
+        mock_response.status_code = 409
+        mock_response.reason_phrase = "already exists"
+        mock_response.content = b"already exists"
+        mock_response.text = "already exists"
+
+        # UnexpectedResponse doesn't take status_code directly,
+        # it should be accessed via response.status_code
         mock_qdrant_client.create_collection.side_effect = UnexpectedResponse(
-            status_code=409,
             reason_phrase="already exists",
             content=b"already exists",
+            response=mock_response,
         )
 
         await vectordb.initialize()

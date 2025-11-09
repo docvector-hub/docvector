@@ -25,9 +25,7 @@ class DocumentRepository:
 
     async def get_by_id(self, document_id: UUID) -> Optional[Document]:
         """Get document by ID."""
-        result = await self.session.execute(
-            select(Document).where(Document.id == document_id)
-        )
+        result = await self.session.execute(select(Document).where(Document.id == document_id))
         return result.scalar_one_or_none()
 
     async def get_by_url(self, source_id: UUID, url: str) -> Optional[Document]:
@@ -108,9 +106,7 @@ class DocumentRepository:
 
     async def delete_by_source(self, source_id: UUID) -> int:
         """Delete all documents for a source."""
-        result = await self.session.execute(
-            select(Document).where(Document.source_id == source_id)
-        )
+        result = await self.session.execute(select(Document).where(Document.source_id == source_id))
         documents = result.scalars().all()
 
         for doc in documents:

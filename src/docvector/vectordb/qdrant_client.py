@@ -109,7 +109,13 @@ class QdrantVectorDB(BaseVectorDB):
             )
             logger.info("Collection created successfully", collection=collection_name)
         except UnexpectedResponse as e:
-            if "already exists" in str(e).lower():
+            # Handle collection already exists (409 Conflict)
+            # Check status_code - it might be on the exception or on e.response
+            status_code = getattr(e, 'status_code', None)
+            if status_code is None and hasattr(e, 'response'):
+                status_code = getattr(e.response, 'status_code', None)
+
+            if status_code == 409 or "already exists" in str(e).lower():
                 logger.warning("Collection already exists", collection=collection_name)
             else:
                 raise
@@ -361,34 +367,36 @@ class QdrantVectorDB(BaseVectorDB):
                             match=models.MatchExcept(**{"except": [value["$ne"]]}),
                         )
                     )
-                elif "$gt" in value:
-                    conditions.append(
-                        models.FieldCondition(
-                            key=key,
-                            range=models.Range(gt=value["$gt"]),
+                else:
+                    # Range operators - use if instead of elif to support multiple ranges
+                    if "$gt" in value:
+                        conditions.append(
+                            models.FieldCondition(
+                                key=key,
+                                range=models.Range(gt=value["$gt"]),
+                            )
                         )
-                    )
-                elif "$gte" in value:
-                    conditions.append(
-                        models.FieldCondition(
-                            key=key,
-                            range=models.Range(gte=value["$gte"]),
+                    if "$gte" in value:
+                        conditions.append(
+                            models.FieldCondition(
+                                key=key,
+                                range=models.Range(gte=value["$gte"]),
+                            )
                         )
-                    )
-                elif "$lt" in value:
-                    conditions.append(
-                        models.FieldCondition(
-                            key=key,
-                            range=models.Range(lt=value["$lt"]),
+                    if "$lt" in value:
+                        conditions.append(
+                            models.FieldCondition(
+                                key=key,
+                                range=models.Range(lt=value["$lt"]),
+                            )
                         )
-                    )
-                elif "$lte" in value:
-                    conditions.append(
-                        models.FieldCondition(
-                            key=key,
-                            range=models.Range(lte=value["$lte"]),
+                    if "$lte" in value:
+                        conditions.append(
+                            models.FieldCondition(
+                                key=key,
+                                range=models.Range(lte=value["$lte"]),
+                            )
                         )
-                    )
             else:
                 # Exact match
                 conditions.append(

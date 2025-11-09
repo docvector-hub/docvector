@@ -10,7 +10,33 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class DocVectorException(Exception):
     """Base exception for DocVector."""
-    pass
+
+    def __init__(
+        self,
+        code: Optional[str] = None,
+        message: Optional[str] = None,
+        details: Optional[dict] = None,
+    ):
+        """
+        Initialize DocVectorException.
+
+        Args:
+            code: Error code
+            message: Error message
+            details: Additional error details
+        """
+        self.code = code
+        self.message = message or "An error occurred"
+        self.details = details or {}
+        super().__init__(self.message)
+
+    def to_dict(self) -> dict:
+        """Convert exception to dictionary format."""
+        return {
+            "error": self.code or "UNKNOWN_ERROR",
+            "message": self.message,
+            "details": self.details,
+        }
 
 
 class Settings(BaseSettings):
@@ -55,6 +81,10 @@ class Settings(BaseSettings):
     search_vector_weight: float = Field(default=0.7)
     search_keyword_weight: float = Field(default=0.3)
 
+    # Chunking
+    chunk_size: int = Field(default=1000)
+    chunk_overlap: int = Field(default=200)
+
     # Crawler
     crawler_max_depth: int = Field(default=3)
     crawler_max_pages: int = Field(default=100)
@@ -81,20 +111,71 @@ def setup_logging(level: Optional[str] = None) -> None:
     logging.basicConfig(
         level=getattr(logging, log_level.upper()),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(sys.stdout)
-        ]
+        handlers=[logging.StreamHandler(sys.stdout)],
     )
 
 
-def get_logger(name: str) -> logging.Logger:
+class StructuredLogger:
+    """Logger wrapper that supports structured logging with keyword arguments."""
+
+    def __init__(self, logger: logging.Logger):
+        """
+        Initialize StructuredLogger.
+
+        Args:
+            logger: Underlying Python logger
+        """
+        self._logger = logger
+
+    def _format_message(self, msg: str, **kwargs) -> str:
+        """
+        Format message with keyword arguments.
+
+        Args:
+            msg: Base message
+            **kwargs: Additional context to include in log
+
+        Returns:
+            Formatted message string
+        """
+        if kwargs:
+            context = " ".join(f"{k}={v}" for k, v in kwargs.items())
+            return f"{msg} | {context}"
+        return msg
+
+    def debug(self, msg: str, **kwargs) -> None:
+        """Log debug message with structured data."""
+        self._logger.debug(self._format_message(msg, **kwargs))
+
+    def info(self, msg: str, **kwargs) -> None:
+        """Log info message with structured data."""
+        self._logger.info(self._format_message(msg, **kwargs))
+
+    def warning(self, msg: str, **kwargs) -> None:
+        """Log warning message with structured data."""
+        self._logger.warning(self._format_message(msg, **kwargs))
+
+    def error(self, msg: str, **kwargs) -> None:
+        """Log error message with structured data."""
+        self._logger.error(self._format_message(msg, **kwargs))
+
+    def critical(self, msg: str, **kwargs) -> None:
+        """Log critical message with structured data."""
+        self._logger.critical(self._format_message(msg, **kwargs))
+
+    def exception(self, msg: str, **kwargs) -> None:
+        """Log exception message with structured data."""
+        self._logger.exception(self._format_message(msg, **kwargs))
+
+
+def get_logger(name: str) -> StructuredLogger:
     """
-    Get a logger instance.
+    Get a structured logger instance.
 
     Args:
         name: Logger name (typically __name__)
 
     Returns:
-        Logger instance
+        StructuredLogger instance
     """
-    return logging.getLogger(name)
+    return StructuredLogger(logging.getLogger(name))

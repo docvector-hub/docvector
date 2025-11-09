@@ -7,7 +7,7 @@ from urllib.parse import urljoin, urlparse
 import aiohttp
 from bs4 import BeautifulSoup
 
-from docvector.core import get_logger, settings, DocVectorException
+from docvector.core import DocVectorException, get_logger, settings
 
 from .base import BaseFetcher, FetchedDocument
 
@@ -136,8 +136,14 @@ class WebCrawler(BaseFetcher):
             await self.session.close()
             self.session = None
 
+    async def close(self) -> None:
+        """Close crawler and cleanup resources."""
+        await self._close_session()
+
     async def _fetch_sitemap(self, base_url: str) -> Set[str]:
         """Try to fetch and parse sitemap.xml."""
+        await self._init_session()
+
         parsed = urlparse(base_url)
         sitemap_url = f"{parsed.scheme}://{parsed.netloc}/sitemap.xml"
 

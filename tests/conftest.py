@@ -2,7 +2,6 @@
 
 import asyncio
 from typing import AsyncGenerator, Generator
-from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -40,9 +39,13 @@ async def test_engine():
     await engine.dispose()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
-    """Create database session for tests."""
+    """Create database session for tests.
+
+    Note: Using function scope to ensure clean state between tests.
+    For read-only tests, consider using a module-scoped session.
+    """
     async_session = sessionmaker(
         test_engine,
         class_=AsyncSession,
@@ -52,6 +55,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
         await session.rollback()
+        await session.close()
 
 
 # Mock data fixtures

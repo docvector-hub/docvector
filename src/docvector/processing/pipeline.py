@@ -107,6 +107,8 @@ class ProcessingPipeline:
 
             # Merge metadata
             if metadata:
+                if parsed.metadata is None:
+                    parsed.metadata = {}
                 parsed.metadata.update(metadata)
 
         # Chunk the parsed text

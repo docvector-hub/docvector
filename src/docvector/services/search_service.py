@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Optional
 
-from docvector.core import get_logger, settings
+from docvector.core import DocVectorException, get_logger, settings
 from docvector.embeddings import BaseEmbedder, LocalEmbedder, OpenAIEmbedder
 from docvector.search import HybridSearch, VectorSearch
 from docvector.vectordb import BaseVectorDB, QdrantVectorDB
@@ -80,6 +80,11 @@ class SearchService:
 
         # Choose search implementation
         if search_type == "vector":
+            if self.vector_search is None:
+                raise DocVectorException(
+                    code="SERVICE_NOT_INITIALIZED",
+                    message="Vector search not initialized",
+                )
             results = await self.vector_search.search(
                 query=query,
                 limit=limit,
@@ -87,6 +92,11 @@ class SearchService:
                 score_threshold=score_threshold,
             )
         else:  # hybrid
+            if self.hybrid_search is None:
+                raise DocVectorException(
+                    code="SERVICE_NOT_INITIALIZED",
+                    message="Hybrid search not initialized",
+                )
             results = await self.hybrid_search.search(
                 query=query,
                 limit=limit,

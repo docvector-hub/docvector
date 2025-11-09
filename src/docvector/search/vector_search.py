@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 from docvector.core import get_logger, settings
 from docvector.embeddings import BaseEmbedder
-from docvector.vectordb import BaseVectorDB, SearchResult
+from docvector.vectordb import BaseVectorDB
 
 logger = get_logger(__name__)
 
@@ -20,7 +20,7 @@ class SearchResultItem:
     content: str
     title: Optional[str] = None
     url: Optional[str] = None
-    metadata: Dict = None
+    metadata: Optional[Dict] = None
 
     def __post_init__(self):
         if self.metadata is None:

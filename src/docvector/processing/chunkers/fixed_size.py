@@ -44,7 +44,7 @@ class FixedSizeChunker(BaseChunker):
 
         while start < len(text):
             # Calculate end position
-            end = start + self.chunk_size
+            end = min(start + self.chunk_size, len(text))
 
             # If this is not the last chunk, try to break at separator
             if end < len(text):

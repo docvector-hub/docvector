@@ -13,7 +13,7 @@ class TextChunk:
     index: int  # Position in document
     start_char: int  # Starting character position
     end_char: int  # Ending character position
-    metadata: Dict = None
+    metadata: Optional[Dict] = None
 
     def __post_init__(self):
         if self.metadata is None:
