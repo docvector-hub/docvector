@@ -71,8 +71,9 @@ class TestQdrantVectorDB:
         mock_response.content = b"already exists"
         mock_response.text = "already exists"
 
+        # UnexpectedResponse doesn't take status_code directly,
+        # it should be accessed via response.status_code
         mock_qdrant_client.create_collection.side_effect = UnexpectedResponse(
-            status_code=409,
             reason_phrase="already exists",
             content=b"already exists",
             response=mock_response,
