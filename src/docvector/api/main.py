@@ -49,7 +49,7 @@ app = FastAPI(
 )
 
 # Import routers after app creation
-from .routes import ingestion, search, sources  # noqa: E402
+from .routes import ingestion, libraries, search, sources  # noqa: E402
 
 # Add middleware
 app.add_middleware(
@@ -145,6 +145,7 @@ async def health_check():
 app.include_router(search.router, prefix="/api/v1", tags=["search"])
 app.include_router(sources.router, prefix="/api/v1/sources", tags=["sources"])
 app.include_router(ingestion.router, prefix="/api/v1", tags=["ingestion"])
+app.include_router(libraries.router, prefix="/api/v1/libraries", tags=["libraries"])
 
 
 if __name__ == "__main__":
