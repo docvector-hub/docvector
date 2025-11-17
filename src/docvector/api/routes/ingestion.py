@@ -4,8 +4,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from docvector.api.dependencies import get_session
-from docvector.api.schemas import IngestSourceRequest, IngestUrlRequest, IngestionResponse
-from docvector.core import get_logger, DocVectorException
+from docvector.api.schemas import IngestionResponse, IngestSourceRequest, IngestUrlRequest
+from docvector.core import DocVectorException, get_logger
 from docvector.db.repositories import SourceRepository
 from docvector.services import IngestionService
 
@@ -60,10 +60,10 @@ async def ingest_source(
     except HTTPException:
         raise
     except DocVectorException as e:
-        raise HTTPException(status_code=400, detail=e.to_dict())
+        raise HTTPException(status_code=400, detail=e.to_dict()) from e
     except Exception as e:
         logger.error("Failed to start ingestion", error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/ingest/url", response_model=IngestionResponse, status_code=201)
@@ -107,7 +107,7 @@ async def ingest_url(
     except HTTPException:
         raise
     except DocVectorException as e:
-        raise HTTPException(status_code=400, detail=e.to_dict())
+        raise HTTPException(status_code=400, detail=e.to_dict()) from e
     except Exception as e:
         logger.error("Failed to ingest URL", url=str(request.url), error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

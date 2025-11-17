@@ -95,16 +95,51 @@ class SemanticChunker(BaseChunker):
         paragraphs = section.split("\n")
         paragraphs = [p.strip() for p in paragraphs if p.strip()]
 
-        chunks = []
-        current_chunk = []
+        chunks: List[TextChunk] = []
+        current_chunk: List[str] = []
         current_size = 0
         chunk_start = start_offset
 
         for para in paragraphs:
             para_size = len(para)
 
+            # If single paragraph is too large, split it by sentences or fixed size
+            if para_size > self.max_chunk_size:
+                # First, save any accumulated chunk
+                if current_chunk:
+                    chunk_text = "\n".join(current_chunk)
+                    chunk = TextChunk(
+                        content=chunk_text,
+                        index=start_index + len(chunks),
+                        start_char=chunk_start,
+                        end_char=chunk_start + len(chunk_text),
+                        metadata=metadata.copy() if metadata else {},
+                    )
+                    chunks.append(chunk)
+                    current_chunk = []
+                    current_size = 0
+                    chunk_start = chunk_start + len(chunk_text) + 1
+
+                # Split oversized paragraph into fixed-size chunks
+                para_start = chunk_start
+                for i in range(0, len(para), self.max_chunk_size):
+                    para_chunk = para[i : i + self.max_chunk_size]
+                    chunk = TextChunk(
+                        content=para_chunk,
+                        index=start_index + len(chunks),
+                        start_char=para_start + i,
+                        end_char=para_start + i + len(para_chunk),
+                        metadata=metadata.copy() if metadata else {},
+                    )
+                    chunks.append(chunk)
+
+                # Update position including newline separator
+                chunk_start = para_start + len(para) + 1
+                # Skip subsequent elif/else since we've fully processed this paragraph
+                continue
+
             # If adding this paragraph exceeds max size
-            if current_size + para_size > self.max_chunk_size and current_chunk:
+            elif current_size + para_size > self.max_chunk_size and current_chunk:
                 # Save current chunk
                 chunk_text = "\n".join(current_chunk)
                 chunk = TextChunk(

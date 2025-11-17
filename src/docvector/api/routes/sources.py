@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from docvector.api.dependencies import get_session
 from docvector.api.schemas import SourceCreate, SourceResponse, SourceUpdate
-from docvector.core import get_logger, DocVectorException
+from docvector.core import DocVectorException, get_logger
 from docvector.services import SourceService
 
 logger = get_logger(__name__)
@@ -34,10 +34,10 @@ async def create_source(
         return SourceResponse.model_validate(source)
 
     except DocVectorException as e:
-        raise HTTPException(status_code=400, detail=e.to_dict())
+        raise HTTPException(status_code=400, detail=e.to_dict()) from e
     except Exception as e:
         logger.error("Failed to create source", error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("", response_model=List[SourceResponse])
@@ -55,7 +55,7 @@ async def list_sources(
 
     except Exception as e:
         logger.error("Failed to list sources", error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/{source_id}", response_model=SourceResponse)
@@ -71,10 +71,10 @@ async def get_source(
         return SourceResponse.model_validate(source)
 
     except DocVectorException as e:
-        raise HTTPException(status_code=404, detail=e.to_dict())
+        raise HTTPException(status_code=404, detail=e.to_dict()) from e
     except Exception as e:
         logger.error("Failed to get source", error=str(e), source_id=str(source_id))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.patch("/{source_id}", response_model=SourceResponse)
@@ -97,10 +97,10 @@ async def update_source(
         return SourceResponse.model_validate(source)
 
     except DocVectorException as e:
-        raise HTTPException(status_code=404, detail=e.to_dict())
+        raise HTTPException(status_code=404, detail=e.to_dict()) from e
     except Exception as e:
         logger.error("Failed to update source", error=str(e), source_id=str(source_id))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.delete("/{source_id}", status_code=204)
@@ -117,9 +117,9 @@ async def delete_source(
             raise HTTPException(status_code=404, detail="Source not found")
 
     except DocVectorException as e:
-        raise HTTPException(status_code=404, detail=e.to_dict())
+        raise HTTPException(status_code=404, detail=e.to_dict()) from e
     except HTTPException:
         raise
     except Exception as e:
         logger.error("Failed to delete source", error=str(e), source_id=str(source_id))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

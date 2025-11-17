@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
-from docvector.core import setup_logging, get_logger, settings, DocVectorException
+from docvector.core import DocVectorException, get_logger, settings, setup_logging
 from docvector.db import close_db
 
 # Setup logging
@@ -47,6 +47,9 @@ app = FastAPI(
     openapi_url="/openapi.json",
     lifespan=lifespan,
 )
+
+# Import routers after app creation
+from .routes import ingestion, search, sources  # noqa: E402
 
 # Add middleware
 app.add_middleware(
@@ -139,8 +142,6 @@ async def health_check():
 
 
 # Include routers
-from .routes import search, sources, ingestion
-
 app.include_router(search.router, prefix="/api/v1", tags=["search"])
 app.include_router(sources.router, prefix="/api/v1/sources", tags=["sources"])
 app.include_router(ingestion.router, prefix="/api/v1", tags=["ingestion"])

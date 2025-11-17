@@ -1,7 +1,6 @@
 """Search API schemas."""
 
 from typing import Dict, List, Optional
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 

@@ -53,7 +53,7 @@ class TestVectorSearch:
     @pytest.mark.asyncio
     async def test_search_with_filters(self, vector_search):
         """Test search with filters."""
-        results = await vector_search.search(
+        _results = await vector_search.search(
             query="test query",
             limit=5,
             filters={"access_level": "public"},
@@ -67,7 +67,7 @@ class TestVectorSearch:
     @pytest.mark.asyncio
     async def test_search_with_score_threshold(self, vector_search):
         """Test search with score threshold."""
-        results = await vector_search.search(
+        _results = await vector_search.search(
             query="test query",
             limit=10,
             score_threshold=0.8,
@@ -138,7 +138,7 @@ class TestHybridSearch:
     @pytest.mark.asyncio
     async def test_hybrid_search_with_filters(self, hybrid_search):
         """Test hybrid search with filters."""
-        results = await hybrid_search.search(
+        _results = await hybrid_search.search(
             query="test query",
             limit=5,
             filters={"access_level": "private"},
@@ -171,8 +171,7 @@ class TestHybridSearch:
         """Test that hybrid search respects result limit."""
         # Create many results
         results = [
-            SearchResultItem(f"c{i}", f"d{i}", 0.9 - i * 0.1, f"content{i}")
-            for i in range(20)
+            SearchResultItem(f"c{i}", f"d{i}", 0.9 - i * 0.1, f"content{i}") for i in range(20)
         ]
 
         hybrid_search.vector_search.search.return_value = results

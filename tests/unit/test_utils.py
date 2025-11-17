@@ -1,7 +1,5 @@
 """Tests for utility functions."""
 
-import pytest
-
 from docvector.utils import (
     clean_text,
     compute_hash,

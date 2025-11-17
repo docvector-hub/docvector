@@ -5,7 +5,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from docvector.core import get_logger, DocVectorException
+from docvector.core import DocVectorException, get_logger
 from docvector.db.repositories import SourceRepository
 from docvector.models import Source
 
@@ -73,7 +73,7 @@ class SourceService:
         if not source:
             raise DocVectorException(
                 code="SOURCE_NOT_FOUND",
-                message=f"Source not found",
+                message="Source not found",
                 details={"source_id": str(source_id)},
             )
 
