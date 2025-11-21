@@ -24,6 +24,21 @@ class SearchRequest(BaseModel):
     score_threshold: Optional[float] = Field(
         None, description="Minimum similarity score", ge=0, le=1
     )
+    use_reranking: bool = Field(
+        True, description="Whether to apply multi-stage reranking (Context7-style)"
+    )
+    max_tokens: Optional[int] = Field(
+        None, description="Maximum tokens to return (Context7-style token limiting)", ge=100
+    )
+    topic: Optional[str] = Field(
+        None, description="Filter by topic (Context7-style topic filtering)"
+    )
+    library_id: Optional[str] = Field(
+        None, description="Filter by library ID (Context7-style library filtering)"
+    )
+    version: Optional[str] = Field(
+        None, description="Filter by library version (Context7-style version filtering)"
+    )
 
 
 class SearchResultSchema(BaseModel):
@@ -36,6 +51,13 @@ class SearchResultSchema(BaseModel):
     title: Optional[str] = None
     url: Optional[str] = None
     metadata: Dict = Field(default_factory=dict)
+    # Context7-style reranking scores
+    vector_score: Optional[float] = None
+    relevance_score: Optional[float] = None
+    code_quality_score: Optional[float] = None
+    formatting_score: Optional[float] = None
+    metadata_score: Optional[float] = None
+    initialization_score: Optional[float] = None
 
 
 class SearchResponse(BaseModel):

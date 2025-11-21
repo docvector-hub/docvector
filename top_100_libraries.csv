@@ -1,0 +1,101 @@
+Rank,Library,Language,Category,Weekly_Downloads,Monthly_Downloads,GitHub_Stars,Docs_URL,Est_Pages,Priority_Score,Update_Frequency,Versioning
+1,React,JavaScript,UI Framework,42700000,,240635,https://react.dev,300,100,Weekly,Semantic
+2,Next.js,JavaScript,React Framework,8000000,,110000,https://nextjs.org/docs,400,98,Weekly,Semantic
+3,Lodash,JavaScript,Utility Library,75600000,,59000,https://lodash.com/docs,250,97,Monthly,Semantic
+4,Axios,JavaScript,HTTP Client,45000000,,105000,https://axios-http.com/docs,80,96,Monthly,Semantic
+5,TypeScript,TypeScript,Language,35000000,,98000,https://www.typescriptlang.org/docs,500,96,Weekly,Semantic
+6,Vue.js,JavaScript,UI Framework,6200000,,209680,https://vuejs.org/guide,350,94,Monthly,Semantic
+7,Express,JavaScript,Backend Framework,30000000,,67000,https://expressjs.com,150,93,Quarterly,Semantic
+8,Webpack,JavaScript,Bundler,25000000,,64500,https://webpack.js.org,400,92,Monthly,Semantic
+9,Vite,JavaScript,Build Tool,12000000,,65000,https://vitejs.dev,200,91,Monthly,Semantic
+10,Tailwind CSS,CSS,CSS Framework,8000000,,81200,https://tailwindcss.com/docs,350,90,Monthly,Semantic
+11,Node.js,JavaScript,Runtime,,,103000,https://nodejs.org/docs,600,90,Monthly,Semantic
+12,Material-UI (MUI),JavaScript,UI Components,4100000,,95000,https://mui.com/material-ui,500,89,Monthly,Semantic
+13,Redux,JavaScript,State Management,8000000,,60800,https://redux.js.org,200,88,Quarterly,Semantic
+14,Angular,TypeScript,UI Framework,483000,,95000,https://angular.dev/overview,600,88,Monthly,Semantic
+15,Jest,JavaScript,Testing Framework,20000000,,44000,https://jestjs.io/docs,250,87,Monthly,Semantic
+16,Prisma,TypeScript,ORM,4600000,,43529,https://www.prisma.io/docs,400,86,Weekly,Semantic
+17,Svelte,JavaScript,UI Framework,2000000,,77000,https://svelte.dev/docs,300,86,Monthly,Semantic
+18,ESLint,JavaScript,Linter,30000000,,24700,https://eslint.org/docs,300,85,Monthly,Semantic
+19,Nest.js,TypeScript,Backend Framework,4000000,,62000,https://docs.nestjs.com,500,84,Monthly,Semantic
+20,Mongoose,JavaScript,MongoDB ODM,3000000,,27315,https://mongoosejs.com/docs,300,84,Monthly,Semantic
+21,Cypress,JavaScript,Testing Framework,5000000,,46600,https://docs.cypress.io,400,83,Monthly,Semantic
+22,Playwright,JavaScript,Testing Framework,4000000,,62000,https://playwright.dev,350,83,Weekly,Semantic
+23,Zustand,JavaScript,State Management,3000000,,45000,https://docs.pmnd.rs/zustand,100,82,Monthly,Semantic
+24,Bootstrap,CSS,CSS Framework,5000000,,169000,https://getbootstrap.com/docs,400,82,Quarterly,Semantic
+25,Sequelize,JavaScript,ORM,2000000,,30128,https://sequelize.org/docs,350,81,Monthly,Semantic
+26,TypeORM,TypeScript,ORM,1500000,,33500,https://typeorm.io,300,80,Monthly,Semantic
+27,Apollo Client,JavaScript,GraphQL Client,2000000,,19300,https://www.apollographql.com/docs/react,400,80,Monthly,Semantic
+28,TanStack Query,JavaScript,Data Fetching,4000000,,40000,https://tanstack.com/query/latest,300,79,Monthly,Semantic
+29,Fastify,JavaScript,Backend Framework,1500000,,31000,https://fastify.dev,250,79,Monthly,Semantic
+30,Rollup,JavaScript,Bundler,8000000,,25100,https://rollupjs.org,150,78,Monthly,Semantic
+31,D3.js,JavaScript,Visualization,2000000,,108000,https://d3js.org,200,78,Quarterly,Semantic
+32,Chart.js,JavaScript,Charting,3000000,,64000,https://www.chartjs.org/docs,150,77,Monthly,Semantic
+33,Ant Design,JavaScript,UI Components,1500000,,90000,https://ant.design/docs,600,77,Monthly,Semantic
+34,Nuxt.js,JavaScript,Vue Framework,500000,,52000,https://nuxt.com/docs,400,76,Monthly,Semantic
+35,Chakra UI,JavaScript,UI Components,1200000,,37000,https://chakra-ui.com/docs,350,76,Monthly,Semantic
+36,Moment.js,JavaScript,Date/Time,12000000,,47800,https://momentjs.com/docs,100,75,Annual,Semantic
+37,Three.js,JavaScript,3D Graphics,1500000,,99000,https://threejs.org/docs,300,75,Monthly,Semantic
+38,Socket.io,JavaScript,WebSockets,5000000,,60000,https://socket.io/docs,200,75,Monthly,Semantic
+39,Esbuild,Go,Bundler,15000000,,37500,https://esbuild.github.io,100,74,Monthly,Semantic
+40,Parcel,JavaScript,Bundler,300000,,43000,https://parceljs.org/docs,150,73,Quarterly,Semantic
+41,Styled Components,JavaScript,CSS-in-JS,3000000,,40300,https://styled-components.com/docs,150,73,Quarterly,Semantic
+42,React Router,JavaScript,Routing,12000000,,52000,https://reactrouter.com,200,72,Monthly,Semantic
+43,Redux Toolkit,JavaScript,State Management,6000000,,10300,https://redux-toolkit.js.org,200,72,Monthly,Semantic
+44,Vitest,JavaScript,Testing Framework,3000000,,12000,https://vitest.dev,150,71,Monthly,Semantic
+45,Mocha,JavaScript,Testing Framework,4000000,,22500,https://mochajs.org,100,70,Quarterly,Semantic
+46,Koa,JavaScript,Backend Framework,1000000,,35000,https://koajs.com,80,70,Quarterly,Semantic
+47,tRPC,TypeScript,API Framework,800000,,33000,https://trpc.io/docs,200,69,Monthly,Semantic
+48,Astro,JavaScript,Static Site Gen,500000,,44000,https://docs.astro.build,300,68,Monthly,Semantic
+49,Remix,JavaScript,React Framework,300000,,28000,https://remix.run/docs,250,67,Monthly,Semantic
+50,SvelteKit,JavaScript,Svelte Framework,400000,,18000,https://kit.svelte.dev/docs,250,66,Monthly,Semantic
+51,NumPy,Python,Numerical Computing,,200000000,26000,https://numpy.org/doc,800,100,Quarterly,Semantic
+52,Pandas,Python,Data Analysis,,150000000,42000,https://pandas.pydata.org/docs,1000,99,Monthly,Semantic
+53,Requests,Python,HTTP Client,,180000000,51800,https://requests.readthedocs.io,100,98,Annual,Semantic
+54,Django,Python,Web Framework,,96000000,77000,https://docs.djangoproject.com,1200,97,Monthly,Semantic
+55,Flask,Python,Web Framework,,85000000,66500,https://flask.palletsprojects.com,300,96,Quarterly,Semantic
+56,FastAPI,Python,Web Framework,,108000000,72000,https://fastapi.tiangolo.com,400,95,Monthly,Semantic
+57,SQLAlchemy,Python,ORM,,215000000,9000,https://docs.sqlalchemy.org,800,94,Monthly,Semantic
+58,PyTorch,Python,ML Framework,,40000000,180000,https://pytorch.org/docs,1500,94,Monthly,Semantic
+59,TensorFlow,Python,ML Framework,,35000000,182000,https://www.tensorflow.org/api_docs,2000,93,Monthly,Semantic
+60,Matplotlib,Python,Visualization,,100000000,19500,https://matplotlib.org/stable/contents.html,600,92,Quarterly,Semantic
+61,Scikit-learn,Python,ML Library,,90000000,58000,https://scikit-learn.org/stable,1000,92,Quarterly,Semantic
+62,Boto3,Python,AWS SDK,,1200000000,8800,https://boto3.amazonaws.com/v1/documentation,500,91,Weekly,Semantic
+63,Click,Python,CLI Framework,,200000000,15000,https://click.palletsprojects.com,150,90,Quarterly,Semantic
+64,Beautiful Soup,Python,Web Scraping,,80000000,12000,https://www.crummy.com/software/BeautifulSoup/bs4/doc,100,89,Annual,Semantic
+65,Pytest,Python,Testing Framework,,180000000,11500,https://docs.pytest.org,400,88,Monthly,Semantic
+66,Celery,Python,Task Queue,,60000000,23500,https://docs.celeryq.dev,400,84,Monthly,Semantic
+67,Pydantic,Python,Validation,,150000000,19000,https://docs.pydantic.dev,300,83,Monthly,Semantic
+68,Pillow,Python,Image Processing,,120000000,11800,https://pillow.readthedocs.io,250,82,Quarterly,Semantic
+69,SciPy,Python,Scientific Computing,,90000000,12500,https://docs.scipy.org,800,81,Quarterly,Semantic
+70,Jupyter,Python,Notebooks,,50000000,11500,https://jupyter.org/documentation,300,80,Monthly,Semantic
+71,Seaborn,Python,Visualization,,60000000,12000,https://seaborn.pydata.org,200,79,Quarterly,Semantic
+72,Scrapy,Python,Web Scraping,,25000000,51000,https://docs.scrapy.org,400,78,Monthly,Semantic
+73,Uvicorn,Python,ASGI Server,,80000000,8000,https://www.uvicorn.org,80,77,Monthly,Semantic
+74,SQLModel,Python,ORM,,15000000,13500,https://sqlmodel.tiangolo.com,150,76,Monthly,Semantic
+75,Plotly,Python,Visualization,,40000000,15500,https://plotly.com/python,500,75,Monthly,Semantic
+76,Spring Boot,Java,Framework,,500000000,73000,https://spring.io/projects/spring-boot,1000,93,Monthly,Semantic
+77,Spring Framework,Java,Framework,,400000000,55000,https://docs.spring.io/spring-framework,1500,92,Monthly,Calendar
+78,Hibernate,Java,ORM,,300000000,5800,https://hibernate.org/orm/documentation,600,89,Quarterly,Semantic
+79,Jackson,Java,JSON Library,,600000000,8900,https://github.com/FasterXML/jackson-docs,300,88,Monthly,Semantic
+80,JUnit,Java,Testing Framework,,400000000,8200,https://junit.org/junit5/docs,250,84,Quarterly,Semantic
+81,Lombok,Java,Dev Tool,,450000000,12700,https://projectlombok.org/features,100,83,Quarterly,Semantic
+82,Guava,Java,Utilities,,500000000,49500,https://github.com/google/guava/wiki,200,82,Quarterly,Semantic
+83,Mockito,Java,Testing Framework,,300000000,14600,https://javadoc.io/doc/org.mockito/mockito-core,150,81,Quarterly,Semantic
+84,Apache Commons,Java,Utilities,,400000000,,https://commons.apache.org,400,80,Annual,Semantic
+85,Log4j,Java,Logging,,350000000,3300,https://logging.apache.org/log4j/2.x,200,79,Quarterly,Semantic
+86,Gradle,Java,Build Tool,,,16300,https://docs.gradle.org,800,78,Monthly,Semantic
+87,Maven,Java,Build Tool,,,4200,https://maven.apache.org/guides,300,77,Quarterly,Semantic
+88,Netty,Java,Networking,,200000000,33000,https://netty.io/wiki,200,76,Quarterly,Semantic
+89,RxJava,Java,Reactive Programming,,150000000,47700,https://github.com/ReactiveX/RxJava/wiki,150,75,Quarterly,Semantic
+90,Testcontainers,Java,Testing,,50000000,7800,https://testcontainers.com,200,74,Monthly,Semantic
+91,Kubernetes,Go,Orchestration,,,118567,https://kubernetes.io/docs,2000,90,Weekly,Semantic
+92,Gin,Go,Web Framework,,,86965,https://gin-gonic.com/docs,150,82,Monthly,Semantic
+93,GORM,Go,ORM,,,36000,https://gorm.io/docs,200,78,Monthly,Semantic
+94,Tokio,Rust,Async Runtime,,145000000,58000,https://tokio.rs/tokio/tutorial,300,85,Monthly,Semantic
+95,Axum,Rust,Web Framework,,50000000,17000,https://docs.rs/axum,200,80,Monthly,Semantic
+96,Actix Web,Rust,Web Framework,,40000000,20500,https://actix.rs/docs,250,79,Monthly,Semantic
+97,Ruby on Rails,Ruby,Web Framework,,500000000,55000,https://guides.rubyonrails.org,1000,87,Monthly,Semantic
+98,RSpec,Ruby,Testing Framework,,300000000,12000,https://rspec.info/documentation,250,79,Quarterly,Semantic
+99,ASP.NET Core,.NET,Web Framework,,500000000,34000,https://learn.microsoft.com/aspnet/core,1500,91,Monthly,Semantic
+100,Entity Framework Core,.NET,ORM,,400000000,14000,https://learn.microsoft.com/ef/core,600,88,Monthly,Semantic
