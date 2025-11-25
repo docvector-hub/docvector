@@ -56,6 +56,16 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO")
     cors_origins: list[str] = Field(default=["*"])
 
+    # API Server
+    api_host: str = Field(default="0.0.0.0")
+    api_port: int = Field(default=8000)
+    api_reload: bool = Field(default=True)
+
+    @property
+    def is_production(self) -> bool:
+        """Check if running in production."""
+        return self.environment == "production"
+
     # Database
     database_url: str = Field(default="postgresql+asyncpg://localhost/docvector")
 
@@ -73,6 +83,8 @@ class Settings(BaseSettings):
     # Embeddings
     embedding_provider: str = Field(default="local")  # "local" or "openai"
     embedding_model: str = Field(default="sentence-transformers/all-MiniLM-L6-v2")
+    embedding_device: str = Field(default="cpu")  # "cpu" or "cuda"
+    embedding_batch_size: int = Field(default=32)
     embedding_cache_enabled: bool = Field(default=True)
     openai_api_key: Optional[str] = Field(default=None)
 
@@ -84,6 +96,7 @@ class Settings(BaseSettings):
     # Chunking
     chunk_size: int = Field(default=1000)
     chunk_overlap: int = Field(default=200)
+    chunking_strategy: str = Field(default="fixed")  # "fixed" or "semantic"
 
     # Crawler
     crawler_max_depth: int = Field(default=3)

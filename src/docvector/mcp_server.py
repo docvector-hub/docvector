@@ -9,7 +9,7 @@ import json
 from typing import Any, Dict, List, Optional
 
 from docvector.core import get_logger
-from docvector.db.session import get_db
+from docvector.db import get_db_session as get_db
 from docvector.services.library_service import LibraryService
 from docvector.services.search_service import SearchService
 from docvector.utils.token_utils import TokenLimiter

@@ -12,9 +12,10 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY, JSONB
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy.types import JSON, TypeDecorator
 
 
 class Base(DeclarativeBase):
@@ -34,7 +35,7 @@ class Library(Base):
     description = Column(Text, nullable=True)
     homepage_url = Column(String(2048), nullable=True)
     repository_url = Column(String(2048), nullable=True)
-    aliases = Column(ARRAY(String), nullable=False, server_default="{}")  # Alternative names
+    aliases = Column(PG_ARRAY(String), nullable=False, server_default="{}")  # Alternative names
     metadata_ = Column("metadata", JSONB, nullable=False, server_default="{}")
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -130,7 +131,7 @@ class Chunk(Base):
     # Context7-style features
     is_code_snippet = Column(Integer, nullable=False, server_default="0")  # Boolean (0/1)
     code_language = Column(String(50), nullable=True)  # Programming language
-    topics = Column(ARRAY(String), nullable=False, server_default="{}")  # Topic tags
+    topics = Column(PG_ARRAY(String), nullable=False, server_default="{}")  # Topic tags
     enrichment = Column(Text, nullable=True)  # LLM-generated explanation
 
     # Quality scores (0-1 range)

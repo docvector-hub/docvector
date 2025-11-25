@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from docvector.core import get_logger
-from docvector.db.session import get_db
+from docvector.db import get_db_session as get_db
 from docvector.services.library_service import LibraryService
 
 logger = get_logger(__name__)
