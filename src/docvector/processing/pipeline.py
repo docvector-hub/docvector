@@ -86,13 +86,6 @@ class ProcessingPipeline:
         Returns:
             Tuple of (parsed document, chunks)
         """
-        logger.debug(
-            "Processing document",
-            mime_type=mime_type,
-            url=url,
-            size=len(content),
-        )
-
         # Find parser
         parser = self._find_parser(mime_type, file_extension)
         if not parser:

@@ -1,9 +1,11 @@
 """HTML document parser."""
 
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from typing import Optional
 
 from bs4 import BeautifulSoup
-from trafilatura import extract
 
 from docvector.core import get_logger
 from docvector.utils import clean_text
@@ -12,6 +14,9 @@ from .base import BaseParser, ParsedDocument
 
 logger = get_logger(__name__)
 
+# Shared thread pool for CPU-intensive parsing operations
+_thread_pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="html-parser")
+
 
 class HTMLParser(BaseParser):
     """Parse HTML documents."""
@@ -19,89 +24,108 @@ class HTMLParser(BaseParser):
     MIME_TYPES = {"text/html", "application/xhtml+xml"}
     EXTENSIONS = {".html", ".htm", ".xhtml"}
 
-    def __init__(self, use_trafilatura: bool = True):
-        """
-        Initialize HTML parser.
+    # Tags to remove (navigation, ads, etc.)
+    REMOVE_TAGS = {
+        "script", "style", "nav", "footer", "header", "aside",
+        "noscript", "iframe", "form", "button", "input",
+        "svg", "canvas", "video", "audio", "advertisement",
+    }
 
-        Args:
-            use_trafilatura: Use trafilatura for better content extraction
-        """
-        self.use_trafilatura = use_trafilatura
+    # Tags to keep for main content
+    CONTENT_TAGS = {
+        "article", "main", "section", "div", "p", "h1", "h2", "h3",
+        "h4", "h5", "h6", "pre", "code", "blockquote", "ul", "ol",
+        "li", "table", "tr", "td", "th", "dl", "dt", "dd",
+    }
+
+    def __init__(self):
+        """Initialize HTML parser."""
+        pass
 
     async def parse(self, content: bytes, url: Optional[str] = None) -> ParsedDocument:
         """Parse HTML content."""
         try:
-            # Try trafilatura first for better content extraction
-            if self.use_trafilatura:
-                text = extract(
-                    content,
-                    include_links=False,
-                    include_images=False,
-                    include_tables=True,
-                    include_comments=False,
-                    # no_fallback=False: Allow fallback to ensure we get content even if main extraction fails
-                    no_fallback=False,
-                    # favor_precision=False: Prioritize getting more content over strict precision
-                    favor_precision=False,
-                    # favor_recall=True: Maximize content extraction, important for documentation
-                    favor_recall=True,
-                    output_format="txt",
-                )
-
-                if text:
-                    # Parse with BeautifulSoup for metadata
-                    soup = BeautifulSoup(content, "html.parser")
-                    title = self._extract_title(soup)
-                    language = self._extract_language(soup)
-                    metadata = self._extract_metadata(soup, url)
-
-                    # Extract headings to ensure they're in the content
-                    # (trafilatura sometimes excludes them)
-                    # Convert text to set of lines for accurate membership checking
-                    text_lines = {line.strip() for line in text.split("\n") if line.strip()}
-                    headings = []
-                    for tag in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
-                        heading_text = tag.get_text(strip=True)
-                        # Check if heading exists as a complete line to avoid false positives
-                        if heading_text and heading_text not in text_lines:
-                            headings.append(heading_text)
-
-                    # Prepend headings that aren't already in the text
-                    if headings:
-                        text = "\n".join(headings) + "\n\n" + text
-
-                    return ParsedDocument(
-                        content=clean_text(text),
-                        title=title,
-                        language=language,
-                        metadata=metadata,
-                    )
-
-            # Fallback to BeautifulSoup
-            soup = BeautifulSoup(content, "html.parser")
-
-            # Remove unwanted elements
-            for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
-                tag.decompose()
-
-            # Extract text
-            text = soup.get_text(separator="\n", strip=True)
-
-            # Extract metadata
-            title = self._extract_title(soup)
-            language = self._extract_language(soup)
-            metadata = self._extract_metadata(soup, url)
-
-            return ParsedDocument(
-                content=clean_text(text),
-                title=title,
-                language=language,
-                metadata=metadata,
+            # Run parsing in thread pool to avoid blocking event loop
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(
+                _thread_pool,
+                partial(self._parse_sync, content, url),
             )
+            return result
 
         except Exception as e:
             logger.error("Failed to parse HTML", error=str(e), url=url)
             raise
+
+    def _parse_sync(self, content: bytes, url: Optional[str] = None) -> ParsedDocument:
+        """Synchronous parsing implementation for thread pool execution."""
+        # Parse HTML with BeautifulSoup (lxml is faster if available)
+        try:
+            soup = BeautifulSoup(content, "lxml")
+        except Exception:
+            # Fallback to html.parser if lxml not available
+            soup = BeautifulSoup(content, "html.parser")
+
+        # Extract metadata first (before removing elements)
+        title = self._extract_title(soup)
+        language = self._extract_language(soup)
+        metadata = self._extract_metadata(soup, url)
+
+        # Remove unwanted elements
+        for tag in soup.find_all(self.REMOVE_TAGS):
+            tag.decompose()
+
+        # Try to find main content area
+        main_content = self._find_main_content(soup)
+
+        if main_content:
+            text = self._extract_text_from_element(main_content)
+        else:
+            # Fallback: extract from body
+            body = soup.find("body")
+            if body:
+                text = self._extract_text_from_element(body)
+            else:
+                text = soup.get_text(separator="\n", strip=True)
+
+        return ParsedDocument(
+            content=clean_text(text),
+            title=title,
+            language=language,
+            metadata=metadata,
+        )
+
+    def _find_main_content(self, soup: BeautifulSoup):
+        """Find the main content area of the page."""
+        # Priority order for finding main content
+        selectors = [
+            ("article", {}),
+            ("main", {}),
+            ("div", {"role": "main"}),
+            ("div", {"id": "content"}),
+            ("div", {"id": "main-content"}),
+            ("div", {"class": "content"}),
+            ("div", {"class": "main-content"}),
+            ("div", {"class": "article"}),
+            ("div", {"class": "post"}),
+            ("div", {"class": "documentation"}),
+            ("div", {"class": "docs"}),
+        ]
+
+        for tag, attrs in selectors:
+            element = soup.find(tag, attrs) if attrs else soup.find(tag)
+            if element:
+                # Verify it has substantial content
+                text_length = len(element.get_text(strip=True))
+                if text_length > 200:  # Minimum content threshold
+                    return element
+
+        return None
+
+    def _extract_text_from_element(self, element) -> str:
+        """Extract text from an element, preserving structure."""
+        # Use get_text with newline separator - much faster than iterating descendants
+        return element.get_text(separator="\n", strip=True)
 
     def can_parse(self, mime_type: str, file_extension: Optional[str] = None) -> bool:
         """Check if can parse HTML."""

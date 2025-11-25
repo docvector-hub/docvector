@@ -63,7 +63,7 @@ class MarkdownParser(BaseParser):
         """Extract title from Markdown (first heading)."""
         lines = text.split("\n")
 
-        for line in lines:
+        for i, line in enumerate(lines):
             line = line.strip()
 
             # # Heading style
@@ -76,9 +76,9 @@ class MarkdownParser(BaseParser):
             # Underline style
             # Title
             # =====
-            if line and len(lines) > lines.index(line) + 1:
-                next_line = lines[lines.index(line) + 1].strip()
+            if line and i + 1 < len(lines):
+                next_line = lines[i + 1].strip()
                 if next_line and all(c in "=-" for c in next_line):
-                    return line.strip()
+                    return line
 
         return None

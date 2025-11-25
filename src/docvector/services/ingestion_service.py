@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from docvector.core import DocVectorException, get_logger, settings
 from docvector.db.repositories import ChunkRepository, DocumentRepository
 from docvector.embeddings import BaseEmbedder, EmbeddingCache, LocalEmbedder, OpenAIEmbedder
-from docvector.ingestion import WebCrawler
+from docvector.ingestion import Crawl4AICrawler
 from docvector.models import Chunk, Document, Source
 from docvector.processing import ProcessingPipeline
 from docvector.utils import compute_text_hash
@@ -35,7 +35,7 @@ class IngestionService:
         self.chunk_repo = ChunkRepository(session)
 
         # Initialize components (lazy)
-        self.crawler: Optional[WebCrawler] = None
+        self.crawler: Optional[Crawl4AICrawler] = None
         self.pipeline: Optional[ProcessingPipeline] = None
         self.embedder: Optional[BaseEmbedder] = None
         self.embedding_cache: Optional[EmbeddingCache] = None
@@ -48,8 +48,8 @@ class IngestionService:
 
         logger.info("Initializing ingestion service")
 
-        # Initialize crawler
-        self.crawler = WebCrawler()
+        # Initialize crawler (using Crawl4AI for fast, AI-optimized fetching)
+        self.crawler = Crawl4AICrawler()
 
         # Initialize processing pipeline
         self.pipeline = ProcessingPipeline()
