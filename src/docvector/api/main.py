@@ -30,10 +30,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         environment=settings.environment,
     )
 
+    # Initialize and cache search service at startup
+    from docvector.services import SearchService
+
+    search_service = SearchService()
+    await search_service.initialize()
+    app.state.search_service = search_service
+    logger.info("Search service initialized and cached")
+
     yield
 
     # Shutdown
     logger.info("Shutting down DocVector API")
+    await search_service.close()
     await close_db()
 
 
