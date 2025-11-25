@@ -1,0 +1,66 @@
+services:
+  # Redis - Caching layer
+  redis:
+    image: redis:7-alpine
+    container_name: docvector-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # Qdrant - Vector database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: docvector-qdrant
+    ports:
+      - "6335:6333"  # HTTP API
+      - "6336:6334"  # gRPC API
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # PostgreSQL - Primary database
+  postgres:
+    image: postgres:16-alpine
+    container_name: docvector-postgres
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=docvector
+      - POSTGRES_PASSWORD=docvector
+      - POSTGRES_DB=docvector
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docvector"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+    driver: local
+  qdrant_storage:
+    driver: local
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: docvector-network
