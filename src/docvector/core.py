@@ -89,9 +89,9 @@ class Settings(BaseSettings):
     openai_api_key: Optional[str] = Field(default=None)
 
     # Search
-    search_min_score: float = Field(default=0.7)
-    search_vector_weight: float = Field(default=0.7)
-    search_keyword_weight: float = Field(default=0.3)
+    search_min_score: float = Field(default=0.3)  # Semantic similarity threshold
+    search_vector_weight: float = Field(default=0.7)  # Weight for vector similarity
+    search_keyword_weight: float = Field(default=0.3)  # Weight for keyword matching
 
     # Chunking
     chunk_size: int = Field(default=1000)
