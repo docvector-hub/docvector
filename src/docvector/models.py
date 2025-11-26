@@ -156,9 +156,23 @@ class Chunk(Base):
 
 
 class Job(Base):
-    """Job model - represents a background job."""
+    """Job model - represents a background job with retry support."""
 
     __tablename__ = "jobs"
+
+    # Job statuses
+    STATUS_PENDING = "pending"
+    STATUS_QUEUED = "queued"
+    STATUS_RUNNING = "running"
+    STATUS_COMPLETED = "completed"
+    STATUS_FAILED = "failed"
+    STATUS_RETRYING = "retrying"
+    STATUS_CANCELLED = "cancelled"
+
+    # Job types
+    TYPE_CRAWL_SOURCE = "crawl_source"
+    TYPE_CRAWL_URL = "crawl_url"
+    TYPE_REINDEX = "reindex"
 
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
     source_id = Column(
@@ -166,13 +180,37 @@ class Job(Base):
     )
     type = Column(String(50), nullable=False)
     status = Column(String(50), nullable=False, server_default="pending")
+    priority = Column(Integer, nullable=False, server_default="0")  # Higher = more priority
+
+    # Job configuration
+    config = Column(JSONB, nullable=False, server_default="{}")  # Job-specific config
+
+    # Progress tracking
     progress = Column(JSONB, nullable=False, server_default="{}")
     result = Column(JSONB, nullable=True)
     error_message = Column(Text, nullable=True)
+
+    # Retry management
+    retry_count = Column(Integer, nullable=False, server_default="0")
+    max_retries = Column(Integer, nullable=False, server_default="3")
+    next_retry_at = Column(DateTime(timezone=True), nullable=True)
+    last_error = Column(Text, nullable=True)
+
+    # Worker info
+    worker_id = Column(String(255), nullable=True)
+    locked_at = Column(DateTime(timezone=True), nullable=True)
+    lock_expires_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Timestamps
     started_at = Column(DateTime(timezone=True), nullable=True)
     completed_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     def __repr__(self) -> str:
-        return f"<Job(id={self.id}, type={self.type}, status={self.status})>"
+        return f"<Job(id={self.id}, type={self.type}, status={self.status}, retry={self.retry_count}/{self.max_retries})>"
+
+    @property
+    def can_retry(self) -> bool:
+        """Check if job can be retried."""
+        return self.retry_count < self.max_retries
