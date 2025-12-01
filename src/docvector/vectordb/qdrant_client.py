@@ -98,8 +98,9 @@ class QdrantVectorDB(BaseVectorDB):
                     distance=distance_metric,
                 ),
                 # Enable on-disk storage for large collections
+                # Lower indexing threshold to enable HNSW for smaller collections
                 optimizers_config=models.OptimizersConfigDiff(
-                    indexing_threshold=10000,
+                    indexing_threshold=100,  # Build HNSW index after 100 vectors
                 ),
                 # HNSW index configuration
                 hnsw_config=models.HnswConfigDiff(

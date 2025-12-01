@@ -143,14 +143,10 @@ async def get_library_docs(
                 "hint": "Use resolve_library_id to find the correct library ID.",
             }
 
-        # Build filters
-        filters = {"library_id": str(library.id)}
-
-        if version:
-            filters["version"] = version
-
-        if topic:
-            filters["topics"] = topic
+        # Build filters - note: library/topic filtering not yet implemented
+        # since the indexed data doesn't have these fields in Qdrant payload
+        # For now, search all docs and rely on semantic relevance
+        filters = {}
 
         # Get search service
         search_service = await get_search_service()
