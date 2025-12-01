@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import httpx
 
-from docvector.core import get_logger, settings, DocVectorException
+from docvector.core import DocVectorException, get_logger, settings
 
 from .base import BaseEmbedder
 
@@ -109,7 +109,7 @@ class OpenAIEmbedder(BaseEmbedder):
                     "status_code": e.response.status_code,
                     "error": str(e),
                 },
-            )
+            ) from e
 
         except Exception as e:
             logger.error("Unexpected error calling OpenAI API", error=str(e))
@@ -117,7 +117,7 @@ class OpenAIEmbedder(BaseEmbedder):
                 code="EMBEDDING_ERROR",
                 message="Failed to generate embeddings",
                 details={"error": str(e)},
-            )
+            ) from e
 
     async def embed_query(self, text: str) -> List[float]:
         """Generate embedding for a single query text."""

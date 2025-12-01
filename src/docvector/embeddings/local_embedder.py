@@ -49,14 +49,16 @@ class LocalEmbedder(BaseEmbedder):
 
         # Load model in executor to avoid blocking
         loop = asyncio.get_event_loop()
-        self.model = await loop.run_in_executor(
-            None,
-            partial(
-                SentenceTransformer,
-                self.model_name,
-                device=self.device,
-            ),
-        )
+
+        def load_model():
+            # Load model without device parameter first to avoid meta tensor issues
+            model = SentenceTransformer(self.model_name)
+            # Then move to device if needed
+            if self.device and self.device != "cpu":
+                model = model.to(self.device)
+            return model
+
+        self.model = await loop.run_in_executor(None, load_model)
 
         # Get embedding dimension
         self._dimension = self.model.get_sentence_embedding_dimension()

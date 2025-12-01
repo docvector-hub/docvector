@@ -28,9 +28,7 @@ class SourceUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     config: Optional[Dict] = None
     sync_frequency: Optional[str] = None
-    status: Optional[str] = Field(
-        None, pattern="^(active|inactive|error)$"
-    )
+    status: Optional[str] = Field(None, pattern="^(active|inactive|error)$")
 
 
 class SourceResponse(BaseModel):

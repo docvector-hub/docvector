@@ -38,49 +38,68 @@ class FixedSizeChunker(BaseChunker):
         if not text:
             return []
 
-        chunks = []
-        start = 0
-        index = 0
-
-        while start < len(text):
-            # Calculate end position
-            end = start + self.chunk_size
-
-            # If this is not the last chunk, try to break at separator
-            if end < len(text):
-                # Look for separator near the end
-                separator_pos = text.rfind(self.separator, start, end)
-
-                # If found and not too far back, use it
-                if separator_pos > start + (self.chunk_size // 2):
-                    end = separator_pos + len(self.separator)
-
-            # Extract chunk
-            chunk_text = text[start:end].strip()
-
-            if chunk_text:
-                chunk = TextChunk(
-                    content=chunk_text,
-                    index=index,
-                    start_char=start,
-                    end_char=end,
-                    metadata=metadata.copy() if metadata else {},
-                )
-                chunks.append(chunk)
-                index += 1
-
-            # Move start position (with overlap)
-            start = end - self.chunk_overlap
-
-            # Prevent infinite loop
-            if start <= end - self.chunk_size:
-                start = end
+        # Run chunking synchronously - it's fast enough for typical document sizes
+        chunks = self._chunk_sync(text, metadata)
 
         logger.debug(
             "Fixed-size chunking completed",
             text_length=len(text),
             chunks=len(chunks),
-            chunk_size=self.chunk_size,
         )
+
+        return chunks
+
+    def _chunk_sync(self, text: str, metadata: Optional[Dict]) -> List[TextChunk]:
+        """Synchronous chunking implementation."""
+        chunks = []
+        start = 0
+        index = 0
+        text_len = len(text)
+        chunk_size = self.chunk_size
+        chunk_overlap = self.chunk_overlap
+        separator = self.separator
+        sep_len = len(separator)
+
+        # Create shared metadata to avoid repeated copies
+        chunk_metadata = metadata.copy() if metadata else {}
+
+        while start < text_len:
+            # Calculate end position
+            end = min(start + chunk_size, text_len)
+
+            # If this is not the last chunk, try to break at separator
+            if end < text_len:
+                # Look for separator near the end
+                separator_pos = text.rfind(separator, start, end)
+
+                # If found and not too far back, use it
+                if separator_pos > start + (chunk_size // 2):
+                    end = separator_pos + sep_len
+
+            # Extract chunk
+            chunk_text = text[start:end].strip()
+
+            if chunk_text:
+                chunks.append(
+                    TextChunk(
+                        content=chunk_text,
+                        index=index,
+                        start_char=start,
+                        end_char=end,
+                        metadata=chunk_metadata,
+                    )
+                )
+                index += 1
+
+            # If we've reached the end, stop
+            if end >= text_len:
+                break
+
+            # Move start position (with overlap)
+            # Ensure we always advance by at least 1 character
+            new_start = end - chunk_overlap
+            if new_start <= start:
+                new_start = start + 1
+            start = new_start
 
         return chunks

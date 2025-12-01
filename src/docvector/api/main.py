@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
-from docvector.core import setup_logging, get_logger, settings, DocVectorException
+from docvector.core import DocVectorException, get_logger, settings, setup_logging
 from docvector.db import close_db
 
 # Setup logging
@@ -30,10 +30,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         environment=settings.environment,
     )
 
+    # Initialize and cache search service at startup
+    from docvector.services import SearchService
+
+    search_service = SearchService()
+    await search_service.initialize()
+    app.state.search_service = search_service
+    logger.info("Search service initialized and cached")
+
     yield
 
     # Shutdown
     logger.info("Shutting down DocVector API")
+    await search_service.close()
     await close_db()
 
 
@@ -47,6 +56,9 @@ app = FastAPI(
     openapi_url="/openapi.json",
     lifespan=lifespan,
 )
+
+# Import routers after app creation
+from .routes import ingestion, libraries, search, sources  # noqa: E402
 
 # Add middleware
 app.add_middleware(
@@ -139,10 +151,10 @@ async def health_check():
 
 
 # Include routers
-from .routes import search, sources
-
 app.include_router(search.router, prefix="/api/v1", tags=["search"])
 app.include_router(sources.router, prefix="/api/v1/sources", tags=["sources"])
+app.include_router(ingestion.router, prefix="/api/v1", tags=["ingestion"])
+app.include_router(libraries.router, prefix="/api/v1/libraries", tags=["libraries"])
 
 
 if __name__ == "__main__":

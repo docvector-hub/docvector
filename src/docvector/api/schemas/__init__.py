@@ -1,8 +1,17 @@
 """API schemas (Pydantic models)."""
 
+from .common import HealthResponse
+from .ingestion import IngestionResponse, IngestSourceRequest, IngestUrlRequest
+from .job import (
+    CrawlSourceRequest,
+    CrawlUrlRequest,
+    JobCreate,
+    JobListResponse,
+    JobResponse,
+    JobStatsResponse,
+)
 from .search import SearchRequest, SearchResponse, SearchResultSchema
 from .source import SourceCreate, SourceResponse, SourceUpdate
-from .common import HealthResponse
 
 __all__ = [
     "SearchRequest",
@@ -12,4 +21,13 @@ __all__ = [
     "SourceResponse",
     "SourceUpdate",
     "HealthResponse",
+    "IngestSourceRequest",
+    "IngestUrlRequest",
+    "IngestionResponse",
+    "JobCreate",
+    "JobResponse",
+    "JobListResponse",
+    "JobStatsResponse",
+    "CrawlSourceRequest",
+    "CrawlUrlRequest",
 ]

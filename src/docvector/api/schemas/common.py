@@ -1,7 +1,7 @@
 """Common API schemas."""
 
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Any, Dict
 
 from pydantic import BaseModel
 
@@ -20,4 +20,4 @@ class ErrorResponse(BaseModel):
     """Error response."""
 
     success: bool = False
-    error: Dict[str, any]
+    error: Dict[str, Any]
