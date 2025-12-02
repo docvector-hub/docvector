@@ -1,4 +1,4 @@
-"""Q&A repositories - Question, Answer, Tag, Vote."""
+"""Q&A repositories - Question, Answer, Comment, Tag, Vote."""
 
 from typing import List, Optional
 from uuid import UUID
@@ -7,7 +7,7 @@ from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from docvector.models import Answer, Question, Tag, Vote, question_tags
+from docvector.models import Answer, Comment, Question, Tag, Vote, question_tags
 
 
 class TagRepository:
@@ -364,3 +364,99 @@ class VoteRepository:
             )
         )
         return list(result.scalars().all())
+
+
+class CommentRepository:
+    """Repository for Comment model."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(self, comment: Comment) -> Comment:
+        """Create a new comment."""
+        self.session.add(comment)
+        await self.session.flush()
+        await self.session.refresh(comment)
+        return comment
+
+    async def get_by_id(self, comment_id: UUID) -> Optional[Comment]:
+        """Get comment by ID."""
+        result = await self.session.execute(
+            select(Comment).where(Comment.id == comment_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_by_question(
+        self,
+        question_id: UUID,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> List[Comment]:
+        """List comments for a question."""
+        result = await self.session.execute(
+            select(Comment)
+            .where(Comment.question_id == question_id)
+            .order_by(Comment.created_at.asc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return list(result.scalars().all())
+
+    async def list_by_answer(
+        self,
+        answer_id: UUID,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> List[Comment]:
+        """List comments for an answer."""
+        result = await self.session.execute(
+            select(Comment)
+            .where(Comment.answer_id == answer_id)
+            .order_by(Comment.created_at.asc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return list(result.scalars().all())
+
+    async def list_replies(
+        self,
+        parent_comment_id: UUID,
+        limit: int = 50,
+    ) -> List[Comment]:
+        """List replies to a comment."""
+        result = await self.session.execute(
+            select(Comment)
+            .where(Comment.parent_comment_id == parent_comment_id)
+            .order_by(Comment.created_at.asc())
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+    async def count_by_question(self, question_id: UUID) -> int:
+        """Count comments for a question."""
+        result = await self.session.execute(
+            select(func.count(Comment.id)).where(Comment.question_id == question_id)
+        )
+        return result.scalar() or 0
+
+    async def count_by_answer(self, answer_id: UUID) -> int:
+        """Count comments for an answer."""
+        result = await self.session.execute(
+            select(func.count(Comment.id)).where(Comment.answer_id == answer_id)
+        )
+        return result.scalar() or 0
+
+    async def delete(self, comment_id: UUID) -> bool:
+        """Delete a comment."""
+        comment = await self.get_by_id(comment_id)
+        if comment:
+            await self.session.delete(comment)
+            await self.session.flush()
+            return True
+        return False
+
+    async def update_vote_score(self, comment_id: UUID, score: int) -> None:
+        """Update comment vote score."""
+        await self.session.execute(
+            update(Comment).where(Comment.id == comment_id).values(vote_score=score)
+        )

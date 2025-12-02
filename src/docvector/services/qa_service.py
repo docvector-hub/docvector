@@ -9,11 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from docvector.core import DocVectorException, get_logger
 from docvector.db.repositories import (
     AnswerRepository,
+    CommentRepository,
     QuestionRepository,
     TagRepository,
     VoteRepository,
 )
-from docvector.models import Answer, Question, Tag, Vote
+from docvector.models import Answer, Comment, Question, Tag, Vote
 
 logger = get_logger(__name__)
 
@@ -25,6 +26,7 @@ class QAService:
         self.session = session
         self.question_repo = QuestionRepository(session)
         self.answer_repo = AnswerRepository(session)
+        self.comment_repo = CommentRepository(session)
         self.tag_repo = TagRepository(session)
         self.vote_repo = VoteRepository(session)
 
@@ -82,12 +84,32 @@ class QAService:
         author_id: str,
         author_type: str = "agent",
         library_id: Optional[UUID] = None,
+        library_name: Optional[str] = None,
         library_version: Optional[str] = None,
         tags: Optional[List[str]] = None,
         metadata: Optional[dict] = None,
+        # External source fields
+        source: str = "internal",
+        source_id: Optional[str] = None,
+        source_url: Optional[str] = None,
     ) -> Question:
-        """Create a new question."""
-        logger.info("Creating question", title=title[:50], author_id=author_id)
+        """Create a new question.
+
+        Args:
+            title: Question title
+            body: Question body (markdown)
+            author_id: Author identifier
+            author_type: 'agent', 'user', or 'external'
+            library_id: Associated library UUID
+            library_name: Library name (denormalized for search)
+            library_version: Library version
+            tags: List of tag names
+            metadata: Additional metadata dict
+            source: Source platform ('internal', 'stackoverflow', 'github', 'discourse')
+            source_id: Original ID from external source
+            source_url: Link to original question
+        """
+        logger.info("Creating question", title=title[:50], author_id=author_id, source=source)
 
         question = Question(
             title=title,
@@ -95,7 +117,11 @@ class QAService:
             author_id=author_id,
             author_type=author_type,
             library_id=library_id,
+            library_name=library_name,
             library_version=library_version,
+            source=source,
+            source_id=source_id,
+            source_url=source_url,
             metadata_=metadata or {},
         )
 
@@ -109,7 +135,7 @@ class QAService:
         question = await self.question_repo.create(question)
         await self.session.commit()
 
-        logger.info("Question created", question_id=str(question.id), title=title[:50])
+        logger.info("Question created", question_id=str(question.id), title=title[:50], source=source)
         return question
 
     async def get_question(self, question_id: UUID, increment_views: bool = False) -> Question:
@@ -227,26 +253,52 @@ class QAService:
         author_id: str,
         author_type: str = "agent",
         metadata: Optional[dict] = None,
+        # External source fields
+        source: str = "internal",
+        source_id: Optional[str] = None,
+        source_url: Optional[str] = None,
+        is_accepted: bool = False,
     ) -> Answer:
-        """Create a new answer."""
+        """Create a new answer.
+
+        Args:
+            question_id: Question UUID to answer
+            body: Answer body (markdown)
+            author_id: Author identifier
+            author_type: 'agent', 'user', or 'external'
+            metadata: Additional metadata dict
+            source: Source platform ('internal', 'stackoverflow', 'github', 'discourse')
+            source_id: Original ID from external source
+            source_url: Link to original answer
+            is_accepted: Whether this is the accepted answer (for imports)
+        """
         # Verify question exists
         question = await self.get_question(question_id)
 
-        logger.info("Creating answer", question_id=str(question_id), author_id=author_id)
+        logger.info("Creating answer", question_id=str(question_id), author_id=author_id, source=source)
 
         answer = Answer(
             question_id=question_id,
             body=body,
             author_id=author_id,
             author_type=author_type,
+            source=source,
+            source_id=source_id,
+            source_url=source_url,
+            is_accepted=is_accepted,
             metadata_=metadata or {},
         )
 
         answer = await self.answer_repo.create(answer)
         await self.question_repo.update_answer_count(question_id, 1)
+
+        # If this is an accepted answer, update the question
+        if is_accepted:
+            await self.question_repo.set_accepted_answer(question_id, answer.id)
+
         await self.session.commit()
 
-        logger.info("Answer created", answer_id=str(answer.id), question_id=str(question_id))
+        logger.info("Answer created", answer_id=str(answer.id), question_id=str(question_id), source=source)
         return answer
 
     async def get_answer(self, answer_id: UUID) -> Answer:
@@ -429,8 +481,118 @@ class QAService:
                 if answer:
                     answer.vote_score = new_score
                     await self.answer_repo.update(answer)
+            elif target_type == "comment":
+                await self.comment_repo.update_vote_score(target_id, new_score)
 
             await self.session.commit()
             logger.info("Vote removed", target_type=target_type, target_id=str(target_id))
 
+        return success
+
+    # ============ Comment Operations ============
+
+    async def create_comment(
+        self,
+        body: str,
+        author_id: str,
+        author_type: str = "agent",
+        question_id: Optional[UUID] = None,
+        answer_id: Optional[UUID] = None,
+        parent_comment_id: Optional[UUID] = None,
+        source: str = "internal",
+        source_id: Optional[str] = None,
+    ) -> Comment:
+        """Create a new comment on a question or answer."""
+        # Validate that exactly one parent is specified
+        parent_count = sum([
+            question_id is not None,
+            answer_id is not None,
+            parent_comment_id is not None,
+        ])
+        if parent_count != 1:
+            raise DocVectorException(
+                code="INVALID_COMMENT_PARENT",
+                message="Comment must have exactly one parent (question_id, answer_id, or parent_comment_id)",
+                details={},
+            )
+
+        # Validate parent exists
+        if question_id:
+            await self.get_question(question_id)
+        elif answer_id:
+            await self.get_answer(answer_id)
+        elif parent_comment_id:
+            await self.get_comment(parent_comment_id)
+
+        logger.info(
+            "Creating comment",
+            author_id=author_id,
+            question_id=str(question_id) if question_id else None,
+            answer_id=str(answer_id) if answer_id else None,
+        )
+
+        comment = Comment(
+            body=body,
+            author_id=author_id,
+            author_type=author_type,
+            question_id=question_id,
+            answer_id=answer_id,
+            parent_comment_id=parent_comment_id,
+            source=source,
+            source_id=source_id,
+        )
+
+        comment = await self.comment_repo.create(comment)
+        await self.session.commit()
+
+        logger.info("Comment created", comment_id=str(comment.id))
+        return comment
+
+    async def get_comment(self, comment_id: UUID) -> Comment:
+        """Get comment by ID."""
+        comment = await self.comment_repo.get_by_id(comment_id)
+        if not comment:
+            raise DocVectorException(
+                code="COMMENT_NOT_FOUND",
+                message="Comment not found",
+                details={"comment_id": str(comment_id)},
+            )
+        return comment
+
+    async def list_question_comments(
+        self,
+        question_id: UUID,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> tuple[List[Comment], int]:
+        """List comments for a question."""
+        comments = await self.comment_repo.list_by_question(
+            question_id=question_id,
+            limit=limit,
+            offset=offset,
+        )
+        total = await self.comment_repo.count_by_question(question_id)
+        return comments, total
+
+    async def list_answer_comments(
+        self,
+        answer_id: UUID,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> tuple[List[Comment], int]:
+        """List comments for an answer."""
+        comments = await self.comment_repo.list_by_answer(
+            answer_id=answer_id,
+            limit=limit,
+            offset=offset,
+        )
+        total = await self.comment_repo.count_by_answer(answer_id)
+        return comments, total
+
+    async def delete_comment(self, comment_id: UUID) -> bool:
+        """Delete a comment."""
+        success = await self.comment_repo.delete(comment_id)
+        if success:
+            await self.session.commit()
+            logger.info("Comment deleted", comment_id=str(comment_id))
         return success

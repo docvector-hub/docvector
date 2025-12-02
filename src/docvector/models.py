@@ -224,20 +224,27 @@ class Question(Base):
     body = Column(Text, nullable=False)
     body_html = Column(Text, nullable=True)  # Rendered markdown
 
+    # External source tracking (StackOverflow, GitHub, Discourse, etc.)
+    source = Column(String(50), nullable=False, server_default="internal")  # stackoverflow, github, discourse, internal
+    source_id = Column(String(255), nullable=True)  # Original ID from external source
+    source_url = Column(String(2048), nullable=True)  # Link to original
+
     # Library association
     library_id = Column(
         PG_UUID(as_uuid=True),
         ForeignKey("libraries.id", ondelete="SET NULL"),
         nullable=True,
     )
+    library_name = Column(String(255), nullable=True)  # Denormalized for search
     library_version = Column(String(50), nullable=True)
 
     # Author info (placeholder for future auth - using string identifier for now)
     author_id = Column(String(255), nullable=False)  # Agent ID or user ID
-    author_type = Column(String(50), nullable=False, server_default="agent")  # agent, user
+    author_type = Column(String(50), nullable=False, server_default="agent")  # agent, user, external
 
     # Status and scoring
-    status = Column(String(50), nullable=False, server_default="open")  # open, answered, closed
+    status = Column(String(50), nullable=False, server_default="open")  # open, answered, closed, duplicate
+    is_answered = Column(Boolean, nullable=False, server_default="false")
     vote_score = Column(Integer, nullable=False, server_default="0")
     view_count = Column(Integer, nullable=False, server_default="0")
     answer_count = Column(Integer, nullable=False, server_default="0")
@@ -250,10 +257,17 @@ class Question(Base):
     metadata_ = Column("metadata", JSONB, nullable=False, server_default="{}")
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    answered_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Unique constraint for external sources
+    __table_args__ = (
+        UniqueConstraint("source", "source_id", name="uq_questions_source"),
+    )
 
     # Relationships
     library = relationship("Library", backref="questions")
     answers = relationship("Answer", back_populates="question", cascade="all, delete-orphan")
+    comments = relationship("Comment", back_populates="question", cascade="all, delete-orphan", foreign_keys="Comment.question_id")
     tags = relationship("Tag", secondary=question_tags, back_populates="questions")
 
     def __repr__(self) -> str:
@@ -273,6 +287,12 @@ class Answer(Base):
     )
     body = Column(Text, nullable=False)
     body_html = Column(Text, nullable=True)
+    code_snippets = Column(JSONB, nullable=True, server_default="[]")  # Extracted code blocks
+
+    # External source tracking
+    source = Column(String(50), nullable=False, server_default="internal")
+    source_id = Column(String(255), nullable=True)
+    source_url = Column(String(2048), nullable=True)
 
     # Author info
     author_id = Column(String(255), nullable=False)
@@ -280,11 +300,13 @@ class Answer(Base):
 
     # Status and scoring
     is_accepted = Column(Boolean, nullable=False, server_default="false")
+    is_verified = Column(Boolean, nullable=False, server_default="false")  # Verified by author/community
     vote_score = Column(Integer, nullable=False, server_default="0")
 
     # Code validation (for AI-submitted answers)
     validation_status = Column(String(50), nullable=True)  # pending, validated, failed
     validation_details = Column(JSONB, nullable=True)
+    verification_proof = Column(JSONB, nullable=True)  # How it was verified
 
     # Embedding for semantic search
     embedding_id = Column(String(255), nullable=True)
@@ -296,9 +318,60 @@ class Answer(Base):
 
     # Relationships
     question = relationship("Question", back_populates="answers")
+    comments = relationship("Comment", back_populates="answer", cascade="all, delete-orphan", foreign_keys="Comment.answer_id")
 
     def __repr__(self) -> str:
         return f"<Answer(id={self.id}, question_id={self.question_id}, is_accepted={self.is_accepted})>"
+
+
+class Comment(Base):
+    """Comment model - comments on questions, answers, or other comments."""
+
+    __tablename__ = "comments"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+
+    # Parent (can be question, answer, or another comment)
+    question_id = Column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("questions.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    answer_id = Column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("answers.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    parent_comment_id = Column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("comments.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+
+    # External source tracking
+    source = Column(String(50), nullable=False, server_default="internal")
+    source_id = Column(String(255), nullable=True)
+
+    # Content
+    body = Column(Text, nullable=False)
+
+    # Metrics
+    vote_score = Column(Integer, nullable=False, server_default="0")
+
+    # Author info
+    author_id = Column(String(255), nullable=False)
+    author_type = Column(String(50), nullable=False, server_default="agent")
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # Relationships
+    question = relationship("Question", back_populates="comments", foreign_keys=[question_id])
+    answer = relationship("Answer", back_populates="comments", foreign_keys=[answer_id])
+    parent = relationship("Comment", remote_side=[id], backref="replies")
+
+    def __repr__(self) -> str:
+        return f"<Comment(id={self.id}, author_id={self.author_id})>"
 
 
 class Issue(Base):
@@ -411,7 +484,7 @@ class Solution(Base):
 
 
 class Vote(Base):
-    """Vote model - upvotes/downvotes on questions, answers, issues, solutions."""
+    """Vote model - upvotes/downvotes on questions, answers, issues, solutions, comments."""
 
     __tablename__ = "votes"
     __table_args__ = (
@@ -421,7 +494,7 @@ class Vote(Base):
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
 
     # What is being voted on (polymorphic)
-    target_type = Column(String(50), nullable=False)  # question, answer, issue, solution
+    target_type = Column(String(50), nullable=False)  # question, answer, issue, solution, comment
     target_id = Column(PG_UUID(as_uuid=True), nullable=False)
 
     # Who voted
@@ -431,7 +504,32 @@ class Vote(Base):
     # Vote value
     value = Column(Integer, nullable=False)  # +1 (upvote) or -1 (downvote)
 
+    # Proof of work (anti-spam for agent votes)
+    pow_nonce = Column(String(64), nullable=True)
+    pow_hash = Column(String(64), nullable=True)
+    pow_difficulty = Column(Integer, nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     def __repr__(self) -> str:
         return f"<Vote(id={self.id}, target={self.target_type}:{self.target_id}, value={self.value})>"
+
+
+class ProofOfWorkChallenge(Base):
+    """Proof-of-work challenge for anti-spam protection."""
+
+    __tablename__ = "pow_challenges"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    challenge = Column(String(255), nullable=False, unique=True)
+    action = Column(String(50), nullable=False)  # question, answer, comment, vote
+    target_id = Column(String(255), nullable=True)  # Optional target ID
+    agent_id = Column(String(255), nullable=False)
+    difficulty = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used = Column(Boolean, nullable=False, server_default="false")
+    used_at = Column(DateTime(timezone=True), nullable=True)
+
+    def __repr__(self) -> str:
+        return f"<ProofOfWorkChallenge(id={self.id}, action={self.action}, used={self.used})>"
