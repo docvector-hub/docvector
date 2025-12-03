@@ -4,9 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Search,
-  LayoutDashboard,
   Key,
-  CreditCard,
   Database,
   LogOut,
   Menu,
@@ -20,10 +18,8 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const navigation = [
   { name: "Search", href: "/search", icon: Search },
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "API Keys", href: "/dashboard/api-keys", icon: Key },
   { name: "Sources", href: "/dashboard/sources", icon: Database },
-  { name: "Billing", href: "/billing", icon: CreditCard },
+  { name: "API Keys", href: "/dashboard/api-keys", icon: Key },
 ];
 
 export function Navbar() {
@@ -37,7 +33,7 @@ export function Navbar() {
         <div className="flex justify-between h-16">
           {/* Logo and primary nav */}
           <div className="flex">
-            <Link href="/dashboard" className="flex items-center">
+            <Link href="/" className="flex items-center">
               <Logo size={32} />
             </Link>
 
